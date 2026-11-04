@@ -1,0 +1,16 @@
+{
+  "name": "demo-restaurante",
+  "version": "1.0.0",
+  "description": "Fogonazo - Software del Restaurante (Carta digital, comandas y panel de cocina en tiempo real)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --env-file=.env server.js",
+    "seed": "node db/seed.js",
+    "seed:reset": "node db/seed.js --reset"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.48.1",
+    "pg": "^8.13.1"
+  }
+}
