@@ -633,20 +633,23 @@
     }
 
     async function loadOrders() {
-      const isStatic = window.location.protocol === 'file:' || 
+      const isStatic = Boolean(window.supabaseClient) ||
+                       window.location.protocol === 'file:' || 
                        window.location.hostname.endsWith('github.io') || 
                        window.location.pathname.endsWith('.html');
 
       if (isStatic || !window.location.port) {
         let supaOrders = [];
+        let supaSuccess = false;
         if (window.supabaseClient) {
           try {
             const { data, error } = await window.supabaseClient
               .from('pedidos')
-              .select('*, lineas_de_pedido(*)')
+              .select('*, lineas_de_pedido!fk_lineas_pedido_restaurante(*)')
               .eq('restaurante_id', REST_ID)
               .order('created_at', { ascending: false });
-            if (!error && data && data.length > 0) {
+            if (!error && Array.isArray(data)) {
+              supaSuccess = true;
               supaOrders = data.map(o => ({
                 ...o,
                 subtotal_formatted: ((o.subtotal_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €',
@@ -657,6 +660,8 @@
                   extras: Array.isArray(l.extras_json) ? l.extras_json : (typeof l.extras_json === 'string' ? JSON.parse(l.extras_json) : [])
                 }))
               }));
+            } else if (error) {
+              console.warn('Error cargando pedidos de Supabase:', error);
             }
           } catch (e) {
             console.warn('Supabase load orders:', e);
@@ -668,19 +673,20 @@
           const stored = localStorage.getItem('fogon_orders');
           if (stored) {
             localOrders = JSON.parse(stored);
-          } else {
+          } else if (!supaSuccess) {
             localOrders = INITIAL_DEMO_ORDERS;
-            localStorage.setItem('fogon_orders', JSON.stringify(localOrders));
           }
         } catch (_) {
-          localOrders = INITIAL_DEMO_ORDERS;
+          if (!supaSuccess) localOrders = INITIAL_DEMO_ORDERS;
         }
 
         const map = new Map();
         supaOrders.forEach(o => map.set(o.id, o));
-        localOrders.forEach(o => {
-          if (!map.has(o.id)) map.set(o.id, o);
-        });
+        if (!supaSuccess) {
+          localOrders.forEach(o => {
+            if (!map.has(o.id)) map.set(o.id, o);
+          });
+        }
 
         ordersList = Array.from(map.values()).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         renderOrders();
@@ -733,7 +739,7 @@
           `;
         }).join('');
 
-        const isStatic = window.location.pathname.endsWith('.html') || window.location.hostname.includes('github.io');
+        const isStatic = Boolean(window.supabaseClient) || window.location.pathname.endsWith('.html') || window.location.hostname.includes('github.io');
         const trackingHref = isStatic ? `seguimiento.html?token=${order.tracking_token}` : `/pedido/${order.tracking_token}`;
 
         return `
@@ -745,7 +751,7 @@
               </div>
               <div style="display:flex; align-items:center; gap:6px;">
                 <span class="service-badge ${serviceClass}">${serviceLabel}</span>
-                <button onclick="confirmDeleteOrder('$order.id', '$order.numero_comanda')" class="btn-delete-order" title="Borrar comanda #${order.numero_comanda}">
+                <button onclick="confirmDeleteOrder('${order.id}', '${order.numero_comanda}')" class="btn-delete-order" title="Borrar comanda #${order.numero_comanda}">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
                   <span>Borrar</span>
                 </button>
@@ -775,19 +781,19 @@
             </div>
 
             <div class="order-actions-bar">
-              <button onclick="setOrderStatus('$order.id', 'recibido')" class="btn-status ${estado === 'recibido' ? 'active-recibido' : ''}">
+              <button onclick="setOrderStatus('${order.id}', 'recibido')" class="btn-status ${estado === 'recibido' ? 'active-recibido' : ''}">
                 <span>Recibido</span>
               </button>
-              <button onclick="setOrderStatus('$order.id', 'cocina')" class="btn-status ${estado === 'cocina' ? 'active-cocina' : ''}">
+              <button onclick="setOrderStatus('${order.id}', 'cocina')" class="btn-status ${estado === 'cocina' ? 'active-cocina' : ''}">
                 <span>En Cocina</span>
               </button>
-              <button onclick="setOrderStatus('$order.id', 'listo')" class="btn-status ${estado === 'listo' ? 'active-listo' : ''}">
+              <button onclick="setOrderStatus('${order.id}', 'listo')" class="btn-status ${estado === 'listo' ? 'active-listo' : ''}">
                 <span>Listo</span>
               </button>
-              <button onclick="setOrderStatus('$order.id', 'entregado')" class="btn-status ${estado === 'entregado' ? 'active-entregado' : ''}" style="grid-column: span 2;">
+              <button onclick="setOrderStatus('${order.id}', 'entregado')" class="btn-status ${estado === 'entregado' ? 'active-entregado' : ''}" style="grid-column: span 2;">
                 <span>Entregado</span>
               </button>
-              <button onclick="setOrderStatus('$order.id', 'cancelado')" class="btn-status btn-cancel" style="grid-column: span 1;">
+              <button onclick="setOrderStatus('${order.id}', 'cancelado')" class="btn-status btn-cancel" style="grid-column: span 1;">
                 <span>Cancelar</span>
               </button>
             </div>
@@ -797,7 +803,8 @@
     }
 
     async function setOrderStatus(orderId, nuevoEstado) {
-      const isStatic = window.location.protocol === 'file:' || 
+      const isStatic = Boolean(window.supabaseClient) ||
+                       window.location.protocol === 'file:' || 
                        window.location.hostname.endsWith('github.io') || 
                        window.location.pathname.endsWith('.html');
 
@@ -846,7 +853,8 @@
         return;
       }
 
-      const isStatic = window.location.protocol === 'file:' || 
+      const isStatic = Boolean(window.supabaseClient) ||
+                       window.location.protocol === 'file:' || 
                        window.location.hostname.endsWith('github.io') || 
                        window.location.pathname.endsWith('.html');
 
@@ -895,7 +903,8 @@
         return;
       }
 
-      const isStatic = window.location.protocol === 'file:' || 
+      const isStatic = Boolean(window.supabaseClient) ||
+                       window.location.protocol === 'file:' || 
                        window.location.hostname.endsWith('github.io') || 
                        window.location.pathname.endsWith('.html');
 
@@ -942,7 +951,8 @@
         return;
       }
 
-      const isStatic = window.location.protocol === 'file:' || 
+      const isStatic = Boolean(window.supabaseClient) ||
+                       window.location.protocol === 'file:' || 
                        window.location.hostname.endsWith('github.io') || 
                        window.location.pathname.endsWith('.html');
 

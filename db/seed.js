@@ -178,7 +178,7 @@ function runSeed(reset = false) {
   );
 
   insertProd.run(
-    'prod_p1',
+    'prod_pos1',
     'rest_demo',
     'cat_demo_3',
     'Tarta de Queso Fluida al Horno',

@@ -111,3 +111,4 @@ COMMIT;
 SELECT u.email, p.rol, p.restaurante_id, p.nombre
 FROM auth.users u
 JOIN public.perfiles p ON p.user_id = u.id;
+

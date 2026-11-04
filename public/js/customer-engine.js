@@ -725,7 +725,8 @@ async function handleFormCheckout(e) {
     }))
   };
 
-  const isStatic = window.location.protocol === 'file:' || 
+  const isStatic = Boolean(window.supabaseClient) ||
+                   window.location.protocol === 'file:' || 
                    window.location.hostname.endsWith('github.io') || 
                    window.location.pathname.endsWith('demo.html') || 
                    window.location.pathname.endsWith('.html');
@@ -794,7 +795,7 @@ async function handleFormCheckout(e) {
       if (window.supabaseClient) {
         try {
           const linesPayload = cart.map(item => ({
-            producto_id: item.id,
+            producto_id: item.id === 'prod_p1' ? 'prod_pos1' : item.id,
             cantidad: item.cantidad,
             opciones_ids: (item.selectedOptions || []).map(o => o.id)
           }));
