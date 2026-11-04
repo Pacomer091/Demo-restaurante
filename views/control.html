@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Control de Comandas — {{RESTAURANTE_NOMBRE}}</title>
-  <link rel="icon" type="image/png" href="/img/logo.png">
+  <title>Control de Comandas — La Fogoneta Smash Burgers</title>
+  <link rel="icon" type="image/png" href="img/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="css/style.css">
   <style>
     :root {
-      --brand-orange: {{COLOR_PRIMARIO}};
-      --brand-orange-light: {{COLOR_SECUNDARIO}};
-      --brand-gradient: linear-gradient(135deg, {{COLOR_PRIMARIO}} 0%, {{COLOR_SECUNDARIO}} 100%);
+      --brand-orange: #ff5500;
+      --brand-orange-light: #ff7a00;
+      --brand-gradient: linear-gradient(135deg, #ff5500 0%, #ff7a00 100%);
     }
 
     body {
@@ -387,15 +387,28 @@
       transform: scale(0.96);
     }
   </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    window.SUPABASE_CONFIG = {
+      url: 'https://bmikdaufucnrezcbssab.supabase.co',
+      key: 'sb_publishable__Jw9hiEizMUSztT-NG559w_ACP1aMrr'
+    };
+    try {
+      window.supabaseClient = window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.key);
+    } catch (e) {
+      console.warn('Supabase init notice:', e);
+    }
+  </script>
 </head>
 <body>
 
   <header class="control-header">
     <div class="header-inner">
       <div class="restaurant-brand">
-        <a href="/" style="display:flex; align-items:center; gap:8px; text-decoration:none;">
-          <img src="/img/logo.png" alt="Fogonazo" class="restaurant-logo">
-          <h1 class="restaurant-title">{{RESTAURANTE_NOMBRE}}</h1>
+        <a href="demo.html" style="display:flex; align-items:center; gap:8px; text-decoration:none;">
+          <img src="img/logo.png" alt="Fogonazo" class="restaurant-logo">
+          <h1 class="restaurant-title">La Fogoneta Smash Burgers</h1>
         </a>
         <span class="role-badge">Panel de Control Rápido</span>
       </div>
@@ -410,7 +423,7 @@
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
           <span>Restablecer Demo</span>
         </button>
-        <a href="/" target="_blank" class="btn btn-secondary btn-sm" style="display:inline-flex; align-items:center; gap:6px;">
+        <a href="demo.html" target="_blank" class="btn btn-secondary btn-sm" style="display:inline-flex; align-items:center; gap:6px;">
           <span>Ver Carta</span>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
         </a>
@@ -454,11 +467,253 @@
 
   <div id="toast-container"></div>
 
+  
   <script>
-    const REST_ID = "{{RESTAURANTE_ID}}";
+    let REST_ID = "rest_demo";
+    let CURRENT_USER_PROFILE = null;
     let ordersList = [];
 
+    // Función de saneamiento XSS para proteger el panel
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // Comandas demo iniciales si no hay nada guardado
+    const INITIAL_DEMO_ORDERS = [
+      {
+        id: 'ord_demo_sample_1',
+        restaurante_id: 'rest_demo',
+        numero_comanda: 108,
+        tracking_token: 'trk_demo_sample_1',
+        tipo_servicio: 'delivery',
+        cliente_nombre: 'Laura Gómez',
+        cliente_telefono: '612 345 678',
+        direccion_entrega: 'Calle Serrano 42, 2º A',
+        notas_cliente: 'Timbre roto, llamar al móvil al llegar por favor',
+        subtotal_cents: 2240,
+        gastos_envio_cents: 250,
+        total_cents: 2490,
+        subtotal_formatted: '22,40 €',
+        gastos_envio_formatted: '2,50 €',
+        total_formatted: '24,90 €',
+        metodo_pago: 'bizum',
+        estado: 'cocina',
+        created_at: new Date(Date.now() - 8 * 60000).toISOString(),
+        lineas: [
+          {
+            id: 'lin_demo_1',
+            nombre_producto: 'Smash Trufada Doble',
+            cantidad: 1,
+            total_linea_cents: 1190,
+            extras: [{ opcion_nombre: 'Al punto con costra crujiente' }]
+          },
+          {
+            id: 'lin_demo_2',
+            nombre_producto: 'Smash Bacon Cheese Clásica',
+            cantidad: 1,
+            total_linea_cents: 1050,
+            extras: [{ opcion_nombre: 'Bien hecha' }]
+          }
+        ]
+      },
+      {
+        id: 'ord_demo_sample_2',
+        restaurante_id: 'rest_demo',
+        numero_comanda: 107,
+        tracking_token: 'trk_demo_sample_2',
+        tipo_servicio: 'takeaway',
+        cliente_nombre: 'Marcos Alonso',
+        cliente_telefono: '699 888 777',
+        direccion_entrega: null,
+        notas_cliente: 'Recogida rápida en barra',
+        subtotal_cents: 1540,
+        gastos_envio_cents: 0,
+        total_cents: 1540,
+        subtotal_formatted: '15,40 €',
+        gastos_envio_formatted: '0,00 €',
+        total_formatted: '15,40 €',
+        metodo_pago: 'tarjeta',
+        estado: 'recibido',
+        created_at: new Date(Date.now() - 20 * 60000).toISOString(),
+        lineas: [
+          {
+            id: 'lin_demo_3',
+            nombre_producto: 'Smash Pollo Sureño Crujiente',
+            cantidad: 1,
+            total_linea_cents: 990,
+            extras: []
+          },
+          {
+            id: 'lin_demo_4',
+            nombre_producto: 'Patatas Rústicas Trufadas',
+            cantidad: 1,
+            total_linea_cents: 550,
+            extras: []
+          }
+        ]
+      }
+    ];
+
+    // Guarda de sesión y comprobación de rol
+    async function checkAuthAndInit() {
+      if (window.supabaseClient) {
+        try {
+          const { data: { session } } = await window.supabaseClient.auth.getSession();
+          if (!session || !session.user) {
+            window.location.href = 'login.html';
+            return false;
+          }
+
+          const { data: perfil, error: pErr } = await window.supabaseClient
+            .from('perfiles')
+            .select('rol, restaurante_id, nombre')
+            .eq('user_id', session.user.id)
+            .maybeSingle();
+
+          if (!pErr && perfil) {
+            CURRENT_USER_PROFILE = perfil;
+            if (perfil.restaurante_id) {
+              REST_ID = perfil.restaurante_id;
+            }
+
+            const userBadge = document.getElementById('user-profile-badge');
+            if (userBadge) {
+              userBadge.textContent = (perfil.nombre || perfil.rol) + ' (' + (perfil.rol === 'superadmin' ? 'Superadmin' : 'Dueño') + ')';
+              userBadge.style.display = 'inline-flex';
+            }
+
+            if (perfil.rol === 'superadmin' || REST_ID === 'rest_demo') {
+              const btnReset = document.getElementById('btn-reset-demo');
+              if (btnReset) btnReset.style.display = 'inline-flex';
+            }
+          }
+        } catch (e) {
+          console.warn('Verificación de sesión:', e);
+        }
+      }
+      return true;
+    }
+
+    async function logout() {
+      if (window.supabaseClient) {
+        try {
+          await window.supabaseClient.auth.signOut();
+        } catch (_) {}
+      }
+      sessionStorage.clear();
+      window.location.href = 'login.html';
+    }
+
+    async function resetDemoData() {
+      if (!confirm('¿Deseas restablecer la carta y pedidos del restaurante demo a sus valores originales?')) {
+        return;
+      }
+      if (!window.supabaseClient) {
+        showToast('Supabase no disponible', 'error');
+        return;
+      }
+      try {
+        const { data, error } = await window.supabaseClient.rpc('restablecer_datos_demo');
+        if (error) {
+          showToast('Error al restablecer: ' + error.message, 'error');
+        } else {
+          showToast('Carta y datos demo restablecidos con éxito.', 'success');
+          try { localStorage.removeItem('fogon_orders'); } catch (_) {}
+          await loadOrders();
+        }
+      } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+      }
+    }
+
     async function loadOrders() {
+      const isStatic = Boolean(window.supabaseClient) ||
+                       window.location.protocol === 'file:' || 
+                       window.location.hostname.endsWith('github.io') || 
+                       window.location.pathname.endsWith('.html');
+
+      if (isStatic || !window.location.port) {
+        let supaOrders = [];
+        let supaSuccess = false;
+        if (window.supabaseClient) {
+          try {
+            let { data, error } = await window.supabaseClient
+              .from('pedidos')
+              .select('*, lineas_de_pedido!fk_lineas_pedido_restaurante(*)')
+              .eq('restaurante_id', REST_ID)
+              .order('created_at', { ascending: false });
+
+            if (error) {
+              const fallbackPed = await window.supabaseClient
+                .from('pedidos')
+                .select('*')
+                .eq('restaurante_id', REST_ID)
+                .order('created_at', { ascending: false });
+              const fallbackLin = await window.supabaseClient
+                .from('lineas_de_pedido')
+                .select('*')
+                .eq('restaurante_id', REST_ID);
+              if (!fallbackPed.error && Array.isArray(fallbackPed.data)) {
+                const allLines = fallbackLin.data || [];
+                data = fallbackPed.data.map(p => ({
+                  ...p,
+                  lineas_de_pedido: allLines.filter(l => l.pedido_id === p.id)
+                }));
+                error = null;
+              }
+            }
+
+            if (!error && Array.isArray(data)) {
+              supaSuccess = true;
+              supaOrders = data.map(o => ({
+                ...o,
+                subtotal_formatted: ((o.subtotal_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €',
+                gastos_envio_formatted: ((o.gastos_envio_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €',
+                total_formatted: ((o.total_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €',
+                lineas: (o.lineas_de_pedido || []).map(l => ({
+                  ...l,
+                  extras: Array.isArray(l.extras_json) ? l.extras_json : (typeof l.extras_json === 'string' ? JSON.parse(l.extras_json) : [])
+                }))
+              }));
+            } else if (error) {
+              console.warn('Error cargando pedidos de Supabase:', error);
+            }
+          } catch (e) {
+            console.warn('Supabase load orders:', e);
+          }
+        }
+
+        let localOrders = [];
+        try {
+          const stored = localStorage.getItem('fogon_orders');
+          if (stored) {
+            localOrders = JSON.parse(stored);
+          } else if (!supaSuccess) {
+            localOrders = INITIAL_DEMO_ORDERS;
+          }
+        } catch (_) {
+          if (!supaSuccess) localOrders = INITIAL_DEMO_ORDERS;
+        }
+
+        const map = new Map();
+        supaOrders.forEach(o => map.set(o.id, o));
+        if (!supaSuccess) {
+          localOrders.forEach(o => {
+            if (!map.has(o.id)) map.set(o.id, o);
+          });
+        }
+
+        ordersList = Array.from(map.values()).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        renderOrders();
+        return;
+      }
+
       try {
         const res = await fetch('/api/admin/orders');
         if (!res.ok) throw new Error('Error al cargar comandas');
@@ -496,14 +751,17 @@
               <div>
                 <div class="item-qty-name">
                   <span class="item-qty">${line.cantidad}x</span>
-                  <span><strong>${line.nombre_producto}</strong></span>
+                  <span><strong>${escapeHtml(line.nombre_producto)}</strong></span>
                 </div>
-                ${extrasText ? `<div class="item-extras-list">+ ${extrasText}</div>` : ''}
+                ${extrasText ? `<div class="item-extras-list">+ ${escapeHtml(extrasText)}</div>` : ''}
               </div>
-              <span style="font-weight:700; font-size:0.82rem;">${(line.total_linea_cents / 100).toFixed(2)} €</span>
+              <span style="font-weight:700; font-size:0.82rem;">${((line.total_linea_cents || 0) / 100).toFixed(2).replace('.', ',')} €</span>
             </li>
           `;
         }).join('');
+
+        const isStatic = Boolean(window.supabaseClient) || window.location.pathname.endsWith('.html') || window.location.hostname.includes('github.io');
+        const trackingHref = isStatic ? `seguimiento.html?token=${order.tracking_token}` : `/pedido/${order.tracking_token}`;
 
         return `
           <div class="order-card status-${estado}" id="card-${order.id}">
@@ -522,9 +780,9 @@
             </div>
 
             <div class="client-details">
-              <div class="client-name">${order.cliente_nombre} • <span class="client-phone">${order.cliente_telefono}</span></div>
-              ${order.direccion_entrega ? `<div class="client-address">Entrega: ${order.direccion_entrega}</div>` : ''}
-              ${order.notas_cliente ? `<div class="client-notes">Nota: "${order.notas_cliente}"</div>` : ''}
+              <div class="client-name">${escapeHtml(order.cliente_nombre)} • <span class="client-phone">${escapeHtml(order.cliente_telefono)}</span></div>
+              ${order.direccion_entrega ? `<div class="client-address">Entrega: ${escapeHtml(order.direccion_entrega)}</div>` : ''}
+              ${order.notas_cliente ? `<div class="client-notes">Nota: "${escapeHtml(order.notas_cliente)}"</div>` : ''}
             </div>
 
             <ul class="order-items-list">
@@ -533,17 +791,16 @@
 
             <div class="order-total-bar">
               <span style="color:var(--text-muted); font-size:0.82rem;">Total comanda</span>
-              <span style="color:var(--brand-orange); font-size:1.1rem;">${order.total_formatted}</span>
+              <span style="color:var(--brand-orange); font-size:1.1rem;">${order.total_formatted || ((order.total_cents||0)/100).toFixed(2).replace('.', ',') + ' €'}</span>
             </div>
 
             <div>
-              <a href="/pedido/${order.tracking_token}" target="_blank" class="tracking-link-btn">
+              <a href="${trackingHref}" target="_blank" class="tracking-link-btn">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                 <span>Ver pantalla de seguimiento del cliente</span>
               </a>
             </div>
 
-            <!-- Botones de cambio de estado de un solo toque -->
             <div class="order-actions-bar">
               <button onclick="setOrderStatus('${order.id}', 'recibido')" class="btn-status ${estado === 'recibido' ? 'active-recibido' : ''}">
                 <span>Recibido</span>
@@ -567,6 +824,35 @@
     }
 
     async function setOrderStatus(orderId, nuevoEstado) {
+      const isStatic = Boolean(window.supabaseClient) ||
+                       window.location.protocol === 'file:' || 
+                       window.location.hostname.endsWith('github.io') || 
+                       window.location.pathname.endsWith('.html');
+
+      if (isStatic || !window.location.port) {
+        const ord = ordersList.find(o => o.id === orderId);
+        if (ord) ord.estado = nuevoEstado;
+        renderOrders();
+
+        try {
+          let local = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
+          const target = local.find(o => o.id === orderId);
+          if (target) {
+            target.estado = nuevoEstado;
+            localStorage.setItem('fogon_orders', JSON.stringify(local));
+          }
+        } catch (_) {}
+
+        if (window.supabaseClient) {
+          try {
+            await window.supabaseClient.from('pedidos').update({ estado: nuevoEstado }).eq('id', orderId);
+          } catch (_) {}
+        }
+
+        showToast(`Comanda #${ord ? ord.numero_comanda : ''} actualizada a '${nuevoEstado}'.`);
+        return;
+      }
+
       try {
         const res = await fetch(`/api/admin/orders/${orderId}/status`, {
           method: 'POST',
@@ -574,13 +860,10 @@
           body: JSON.stringify({ nuevoEstado })
         });
         if (!res.ok) throw new Error('Error al actualizar estado');
-
-        // Actualiza en memoria
         const ord = ordersList.find(o => o.id === orderId);
         if (ord) ord.estado = nuevoEstado;
         renderOrders();
-
-        showToast(`Comanda #${ord ? ord.numero_comanda : ''} actualizada a '${nuevoEstado}'. El cliente ya lo ve en su pantalla.`);
+        showToast(`Comanda #${ord ? ord.numero_comanda : ''} actualizada a '${nuevoEstado}'.`);
       } catch (err) {
         showToast('Error al actualizar comanda: ' + err.message, 'error');
       }
@@ -590,10 +873,35 @@
       if (!confirm(`¿Estás seguro de que quieres borrar la comanda #${orderNum}? Esta acción no se puede deshacer.`)) {
         return;
       }
+
+      const isStatic = Boolean(window.supabaseClient) ||
+                       window.location.protocol === 'file:' || 
+                       window.location.hostname.endsWith('github.io') || 
+                       window.location.pathname.endsWith('.html');
+
+      if (isStatic || !window.location.port) {
+        ordersList = ordersList.filter(o => o.id !== orderId);
+        renderOrders();
+
+        try {
+          let local = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
+          local = local.filter(o => o.id !== orderId);
+          localStorage.setItem('fogon_orders', JSON.stringify(local));
+        } catch (_) {}
+
+        if (window.supabaseClient) {
+          try {
+            await window.supabaseClient.from('lineas_de_pedido').delete().eq('pedido_id', orderId);
+            await window.supabaseClient.from('pedidos').delete().eq('id', orderId);
+          } catch (_) {}
+        }
+
+        showToast(`Comanda #${orderNum} borrada correctamente`);
+        return;
+      }
+
       try {
-        const res = await fetch(`/api/admin/orders/${orderId}`, {
-          method: 'DELETE'
-        });
+        const res = await fetch(`/api/admin/orders/${orderId}`, { method: 'DELETE' });
         if (!res.ok) {
           const errData = await res.json().catch(() => ({}));
           throw new Error(errData.error || 'Error al borrar comanda');
@@ -615,6 +923,32 @@
       if (!confirm(`¿Deseas eliminar las ${completedCount} comandas entregadas o canceladas?`)) {
         return;
       }
+
+      const isStatic = Boolean(window.supabaseClient) ||
+                       window.location.protocol === 'file:' || 
+                       window.location.hostname.endsWith('github.io') || 
+                       window.location.pathname.endsWith('.html');
+
+      if (isStatic || !window.location.port) {
+        ordersList = ordersList.filter(o => o.estado !== 'entregado' && o.estado !== 'cancelado');
+        renderOrders();
+
+        try {
+          let local = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
+          local = local.filter(o => o.estado !== 'entregado' && o.estado !== 'cancelado');
+          localStorage.setItem('fogon_orders', JSON.stringify(local));
+        } catch (_) {}
+
+        if (window.supabaseClient) {
+          try {
+            await window.supabaseClient.from('pedidos').delete().in('estado', ['entregado', 'cancelado']).eq('restaurante_id', REST_ID);
+          } catch (_) {}
+        }
+
+        showToast(`${completedCount} comandas finalizadas eliminadas`);
+        return;
+      }
+
       try {
         const res = await fetch('/api/admin/orders/clear', {
           method: 'POST',
@@ -637,6 +971,30 @@
       if (!confirm(`¿Estás seguro de que deseas BORRAR TODAS las ${ordersList.length} comandas del panel?`)) {
         return;
       }
+
+      const isStatic = Boolean(window.supabaseClient) ||
+                       window.location.protocol === 'file:' || 
+                       window.location.hostname.endsWith('github.io') || 
+                       window.location.pathname.endsWith('.html');
+
+      if (isStatic || !window.location.port) {
+        ordersList = [];
+        renderOrders();
+        try {
+          localStorage.removeItem('fogon_orders');
+        } catch (_) {}
+
+        if (window.supabaseClient) {
+          try {
+            await window.supabaseClient.from('lineas_de_pedido').delete().eq('restaurante_id', REST_ID);
+            await window.supabaseClient.from('pedidos').delete().eq('restaurante_id', REST_ID);
+          } catch (_) {}
+        }
+
+        showToast('Todas las comandas han sido eliminadas');
+        return;
+      }
+
       try {
         const res = await fetch('/api/admin/orders/clear', {
           method: 'POST',
@@ -662,25 +1020,43 @@
       setTimeout(() => toast.remove(), 3500);
     }
 
-    // SSE en vivo
-    function initSSE() {
-      const evtSource = new EventSource('/api/events');
-      evtSource.onmessage = (e) => {
+    function initLiveSync() {
+      if (window.supabaseClient) {
         try {
-          const data = JSON.parse(e.data);
-          if (data.type === 'new_order' || data.type === 'order_status' || data.type === 'order_deleted' || data.type === 'orders_cleared') {
-            loadOrders();
-          }
+          window.supabaseClient
+            .channel('kds-orders-channel')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos' }, () => {
+              loadOrders();
+            })
+            .subscribe();
         } catch (_) {}
-      };
+      }
+
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'fogon_orders') {
+          loadOrders();
+        }
+      });
+
+      if (window.location.port) {
+        try {
+          const evtSource = new EventSource('/api/events');
+          evtSource.onmessage = (e) => {
+            loadOrders();
+          };
+        } catch (_) {}
+      }
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      loadOrders();
-      initSSE();
-      // Polling de respaldo cada 8 segundos
-      setInterval(loadOrders, 8000);
+    document.addEventListener('DOMContentLoaded', async () => {
+      const ok = await checkAuthAndInit();
+      if (ok) {
+        loadOrders();
+        initLiveSync();
+        setInterval(loadOrders, 4000);
+      }
     });
   </script>
+
 </body>
 </html>

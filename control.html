@@ -643,11 +643,32 @@
         let supaSuccess = false;
         if (window.supabaseClient) {
           try {
-            const { data, error } = await window.supabaseClient
+            let { data, error } = await window.supabaseClient
               .from('pedidos')
               .select('*, lineas_de_pedido!fk_lineas_pedido_restaurante(*)')
               .eq('restaurante_id', REST_ID)
               .order('created_at', { ascending: false });
+
+            if (error) {
+              const fallbackPed = await window.supabaseClient
+                .from('pedidos')
+                .select('*')
+                .eq('restaurante_id', REST_ID)
+                .order('created_at', { ascending: false });
+              const fallbackLin = await window.supabaseClient
+                .from('lineas_de_pedido')
+                .select('*')
+                .eq('restaurante_id', REST_ID);
+              if (!fallbackPed.error && Array.isArray(fallbackPed.data)) {
+                const allLines = fallbackLin.data || [];
+                data = fallbackPed.data.map(p => ({
+                  ...p,
+                  lineas_de_pedido: allLines.filter(l => l.pedido_id === p.id)
+                }));
+                error = null;
+              }
+            }
+
             if (!error && Array.isArray(data)) {
               supaSuccess = true;
               supaOrders = data.map(o => ({
