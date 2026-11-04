@@ -396,9 +396,7 @@
         // Guardar datos en sessionStorage para carga instantánea
         sessionStorage.setItem('fogon_user_profile', JSON.stringify(perfil));
 
-        if (perfil.rol === 'superadmin') {
-          window.location.href = 'admin.html';
-        } else if (perfil.rol === 'dueno') {
+        if (perfil.rol === 'superadmin' || perfil.rol === 'dueno') {
           window.location.href = 'control.html';
         } else {
           showAlert('Rol no reconocido: ' + perfil.rol);
