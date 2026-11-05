@@ -116,51 +116,104 @@
       align-items: center;
       gap: 6px;
       flex-shrink: 0;
+      position: relative;
     }
 
-    .rest-demo-pill {
-      font-size: 0.68rem;
+    .btn-nav-menu {
+      font-size: 0.84rem;
       font-weight: 800;
-      color: #64748b;
-      background: #f1f5f9;
-      border: 1px solid #cbd5e1;
-      padding: 3px 8px;
-      border-radius: var(--radius-full);
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-      white-space: nowrap;
-    }
-
-    .rest-demo-pill .short-text {
-      display: none;
-    }
-
-    .btn-nav-control {
-      font-size: 0.78rem;
-      font-weight: 700;
-      padding: 6px 10px;
-      min-height: 36px;
+      padding: 7px 12px;
+      min-height: 38px;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      border-radius: var(--radius-sm);
+      gap: 7px;
+      border-radius: 10px;
+      background: #ffffff;
+      color: var(--text-main);
+      border: 1.5px solid #cbd5e1;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+      transition: all 0.18s ease;
+      font-family: inherit;
     }
 
-    @media (max-width: 480px) {
-      .rest-demo-pill .full-text {
-        display: none;
+    .btn-nav-menu:hover,
+    .btn-nav-menu.active {
+      border-color: var(--brand-orange);
+      color: var(--brand-orange);
+      background: #fff7ed;
+    }
+
+    .nav-dropdown-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      width: 245px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      box-shadow: 0 14px 34px rgba(15, 23, 42, 0.14);
+      padding: 6px;
+      display: none;
+      flex-direction: column;
+      gap: 2px;
+      z-index: 120;
+      animation: navDropFade 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .nav-dropdown-menu.open {
+      display: flex;
+    }
+
+    @keyframes navDropFade {
+      from {
+        opacity: 0;
+        transform: translateY(-6px) scale(0.98);
       }
-      .rest-demo-pill .short-text {
-        display: inline;
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
       }
-      .btn-nav-control span {
-        display: none;
-      }
-      .btn-nav-control {
-        padding: 6px 8px;
-        min-width: 36px;
-        justify-content: center;
-      }
+    }
+
+    .nav-dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 10px 12px;
+      border: none;
+      background: transparent;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text-main);
+      text-decoration: none;
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .nav-dropdown-item svg {
+      color: #64748b;
+      flex-shrink: 0;
+      transition: color 0.15s ease;
+    }
+
+    .nav-dropdown-item:hover {
+      background: #fff7ed;
+      color: var(--brand-orange);
+    }
+
+    .nav-dropdown-item:hover svg {
+      color: var(--brand-orange);
+    }
+
+    .nav-dropdown-divider {
+      height: 1px;
+      background: #f1f5f9;
+      margin: 4px 6px;
     }
 
     /* 2. BANNER Y CABECERA DEL RESTAURANTE CON FOTO HERO */
@@ -1211,15 +1264,35 @@
         <img src="img/logo.png" alt="Fogonazo" class="rest-logo-img">
         <span class="rest-brand-name">La Fogoneta Smash Burgers</span>
       </a>
-      <div class="nav-actions">
-        <span class="rest-demo-pill">
-          <span class="full-text">Restaurante de ejemplo</span>
-          <span class="short-text">Ejemplo</span>
-        </span>
-        <a href="control.html" target="_blank" class="btn btn-secondary btn-nav-control" title="Panel de Cocina">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
-          <span>Cocina</span>
-        </a>
+      <div class="nav-actions" id="top-nav-menu-container">
+        <button type="button" class="btn-nav-menu" id="btn-top-menu" onclick="toggleTopNavMenu(event)" aria-expanded="false" aria-haspopup="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          <span id="btn-top-menu-label">Menú</span>
+        </button>
+
+        <div class="nav-dropdown-menu" id="top-nav-dropdown" role="menu">
+          <button type="button" class="nav-dropdown-item" onclick="openCustomerAuthModal()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <span id="menu-item-auth-label">Iniciar sesión</span>
+          </button>
+
+          <button type="button" class="nav-dropdown-item" onclick="openPastOrdersModal()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+            <span>Pedidos anteriores</span>
+          </button>
+
+          <button type="button" class="nav-dropdown-item" onclick="openIncidentsModal()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            <span>Gestión de incidencias</span>
+          </button>
+
+          <div class="nav-dropdown-divider"></div>
+
+          <a href="login.html" class="nav-dropdown-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+            <span>Acceso profesional</span>
+          </a>
+        </div>
       </div>
     </div>
   </header>
@@ -1534,6 +1607,93 @@
     </div>
   </div>
 
+  <!-- 9. MODAL: INICIAR SESIÓN CLIENTE -->
+  <div class="modal-overlay" id="customer-auth-modal" onclick="if(event.target.id==='customer-auth-modal') closeCustomerAuthModal()">
+    <div class="modal-card">
+      <div class="sheet-drag-handle"></div>
+      <div class="modal-header">
+        <h3 class="modal-title">Iniciar sesión / Mi Cuenta</h3>
+        <button onclick="closeCustomerAuthModal()" class="btn-close-modal" aria-label="Cerrar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.88rem; color:var(--text-muted); margin:0;">Guarda tus datos para tramitar tus pedidos más rápido y consultar tu historial en este dispositivo.</p>
+        <form onsubmit="handleCustomerAuthSubmit(event)" id="customer-auth-form">
+          <div class="form-group">
+            <label for="auth-cust-name" class="form-label">Nombre completo</label>
+            <input type="text" id="auth-cust-name" class="form-input" required placeholder="Ej. Carlos Mendoza">
+          </div>
+          <div class="form-group">
+            <label for="auth-cust-phone" class="form-label">Teléfono móvil</label>
+            <input type="tel" id="auth-cust-phone" class="form-input" required placeholder="Ej. 654 321 000">
+          </div>
+          <div class="form-group">
+            <label for="auth-cust-address" class="form-label">Dirección habitual de entrega</label>
+            <input type="text" id="auth-cust-address" class="form-input" placeholder="Calle, número, piso y puerta">
+          </div>
+          <div style="display:flex; gap:8px; margin-top:1rem;">
+            <button type="submit" class="btn btn-primary" style="flex:1; min-height:48px; font-weight:800;">Guardar e Iniciar Sesión</button>
+            <button type="button" id="btn-cust-logout" onclick="logoutCustomerProfile()" class="btn btn-secondary" style="display:none; min-height:48px; font-weight:700; color:#dc2626; border-color:#fecaca;">Cerrar sesión</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 10. MODAL: PEDIDOS ANTERIORES -->
+  <div class="modal-overlay" id="past-orders-modal" onclick="if(event.target.id==='past-orders-modal') closePastOrdersModal()">
+    <div class="modal-card">
+      <div class="sheet-drag-handle"></div>
+      <div class="modal-header">
+        <h3 class="modal-title">Pedidos anteriores</h3>
+        <button onclick="closePastOrdersModal()" class="btn-close-modal" aria-label="Cerrar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <div class="modal-body" id="past-orders-list-body">
+        <!-- Se rellena dinámicamente -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 11. MODAL: GESTIÓN DE INCIDENCIAS -->
+  <div class="modal-overlay" id="incidents-modal" onclick="if(event.target.id==='incidents-modal') closeIncidentsModal()">
+    <div class="modal-card">
+      <div class="sheet-drag-handle"></div>
+      <div class="modal-header">
+        <h3 class="modal-title">Gestión de incidencias</h3>
+        <button onclick="closeIncidentsModal()" class="btn-close-modal" aria-label="Cerrar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.88rem; color:var(--text-muted); margin:0;">¿Has tenido algún problema con tu pedido? Envíanos los detalles y el restaurante lo atenderá de inmediato.</p>
+        <form onsubmit="handleIncidentSubmit(event)" id="incident-form">
+          <div class="form-group">
+            <label for="inc-order-num" class="form-label">Nº de comanda o teléfono</label>
+            <input type="text" id="inc-order-num" class="form-input" required placeholder="Ej. #113 o 654 321 000">
+          </div>
+          <div class="form-group">
+            <label for="inc-type" class="form-label">Motivo de la incidencia</label>
+            <select id="inc-type" class="form-input" required>
+              <option value="Retraso en la entrega">Retraso en la entrega</option>
+              <option value="Producto incompleto o erróneo">Producto incompleto o erróneo</option>
+              <option value="Modificar dirección o nota">Modificar dirección o nota</option>
+              <option value="Problema con el pago">Problema con el pago</option>
+              <option value="Otro motivo">Otro motivo</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="inc-desc" class="form-label">Descripción detallada</label>
+            <textarea id="inc-desc" class="form-input" rows="3" required placeholder="Cuéntanos qué ha ocurrido para solucionarlo rápidamente..." style="min-height:84px; resize:vertical;"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary" id="btn-submit-incident" style="width:100%; min-height:48px; font-weight:800;">Enviar incidencia al restaurante</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <div id="toast-container"></div>
 
   <!-- Inyección de Datos del Servidor -->
@@ -1550,5 +1710,206 @@
   </script>
 
   <script src="js/customer-engine.js"></script>
+  <script>
+    function toggleTopNavMenu(e) {
+      if (e) e.stopPropagation();
+      const dropdown = document.getElementById('top-nav-dropdown');
+      const btn = document.getElementById('btn-top-menu');
+      if (!dropdown) return;
+      const isOpen = dropdown.classList.toggle('open');
+      if (btn) {
+        btn.classList.toggle('active', isOpen);
+        btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      }
+    }
+
+    function closeTopNavMenu() {
+      const dropdown = document.getElementById('top-nav-dropdown');
+      const btn = document.getElementById('btn-top-menu');
+      if (dropdown) dropdown.classList.remove('open');
+      if (btn) {
+        btn.classList.remove('active');
+        btn.setAttribute('aria-expanded', 'false');
+      }
+    }
+
+    document.addEventListener('click', (e) => {
+      const container = document.getElementById('top-nav-menu-container');
+      if (container && !container.contains(e.target)) {
+        closeTopNavMenu();
+      }
+    });
+
+    function loadSavedCustomerProfile() {
+      try {
+        const saved = JSON.parse(localStorage.getItem('fogon_customer_profile') || 'null');
+        const authLabel = document.getElementById('menu-item-auth-label');
+        const logoutBtn = document.getElementById('btn-cust-logout');
+        if (saved && saved.nombre) {
+          if (authLabel) authLabel.textContent = 'Mi cuenta (' + saved.nombre.split(' ')[0] + ')';
+          if (logoutBtn) logoutBtn.style.display = 'inline-flex';
+          const cName = document.getElementById('cust-name');
+          const cPhone = document.getElementById('cust-phone');
+          const cAddr = document.getElementById('cust-address');
+          if (cName && saved.nombre) cName.value = saved.nombre;
+          if (cPhone && saved.telefono) cPhone.value = saved.telefono;
+          if (cAddr && saved.direccion) cAddr.value = saved.direccion;
+        } else {
+          if (authLabel) authLabel.textContent = 'Iniciar sesión';
+          if (logoutBtn) logoutBtn.style.display = 'none';
+        }
+      } catch (_) {}
+    }
+
+    document.addEventListener('DOMContentLoaded', loadSavedCustomerProfile);
+
+    function openCustomerAuthModal() {
+      closeTopNavMenu();
+      try {
+        const saved = JSON.parse(localStorage.getItem('fogon_customer_profile') || 'null');
+        if (saved) {
+          document.getElementById('auth-cust-name').value = saved.nombre || '';
+          document.getElementById('auth-cust-phone').value = saved.telefono || '';
+          document.getElementById('auth-cust-address').value = saved.direccion || '';
+        }
+      } catch (_) {}
+      document.body.classList.add('modal-open');
+      document.getElementById('customer-auth-modal').classList.add('open');
+    }
+
+    function closeCustomerAuthModal() {
+      document.body.classList.remove('modal-open');
+      document.getElementById('customer-auth-modal').classList.remove('open');
+    }
+
+    function handleCustomerAuthSubmit(e) {
+      e.preventDefault();
+      const nombre = document.getElementById('auth-cust-name').value.trim();
+      const telefono = document.getElementById('auth-cust-phone').value.trim();
+      const direccion = document.getElementById('auth-cust-address').value.trim();
+      if (!nombre || !telefono) return;
+      try {
+        localStorage.setItem('fogon_customer_profile', JSON.stringify({ nombre, telefono, direccion }));
+      } catch (_) {}
+      loadSavedCustomerProfile();
+      closeCustomerAuthModal();
+      if (typeof showToast === 'function') {
+        showToast('Sesión iniciada como ' + nombre, 'success');
+      }
+    }
+
+    function logoutCustomerProfile() {
+      try {
+        localStorage.removeItem('fogon_customer_profile');
+      } catch (_) {}
+      document.getElementById('auth-cust-name').value = '';
+      document.getElementById('auth-cust-phone').value = '';
+      document.getElementById('auth-cust-address').value = '';
+      loadSavedCustomerProfile();
+      closeCustomerAuthModal();
+      if (typeof showToast === 'function') {
+        showToast('Has cerrado sesión correctamente');
+      }
+    }
+
+    function openPastOrdersModal() {
+      closeTopNavMenu();
+      const body = document.getElementById('past-orders-list-body');
+      let orders = [];
+      try {
+        const raw = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
+        if (Array.isArray(raw)) {
+          orders = raw.filter(o => o && o.id !== 'ped_demo_initial' && o.id !== 'ped_07be7a128b85439aa2222e2155ac5a46');
+        }
+      } catch (_) {}
+
+      if (!orders.length) {
+        body.innerHTML = `
+          <div style="text-align:center; padding:2rem 1rem; color:var(--text-muted);">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" style="margin-bottom:8px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+            <p style="font-weight:800; color:var(--text-main); margin:0 0 4px 0;">Aún no tienes pedidos anteriores</p>
+            <span style="font-size:0.85rem;">Cuando realices un pedido en este dispositivo aparecerá aquí con su enlace de seguimiento.</span>
+          </div>
+        `;
+      } else {
+        body.innerHTML = orders.map(o => {
+          const itemsSummary = (o.lineas || []).map(l => `${l.cantidad}x ${l.nombre_producto}`).join(', ');
+          const dateStr = o.created_at ? new Date(o.created_at).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
+          const totalStr = o.total_formatted || (((o.total_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €');
+          return `
+            <div style="border:1px solid #e2e8f0; border-radius:12px; padding:12px; background:#f8fafc; display:flex; flex-direction:column; gap:8px;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <strong style="font-size:0.98rem; color:var(--text-main);">Comanda #${o.numero_comanda || ''}</strong>
+                <span style="font-size:0.78rem; color:var(--text-muted);">${dateStr}</span>
+              </div>
+              <div style="font-size:0.85rem; color:var(--text-muted);">${itemsSummary || 'Pedido en La Fogoneta'}</div>
+              <div style="display:flex; justify-content:space-between; align-items:center; padding-top:6px; border-top:1px solid #e2e8f0;">
+                <strong style="color:var(--brand-orange); font-size:0.95rem;">${totalStr}</strong>
+                <a href="seguimiento.html?token=${encodeURIComponent(o.tracking_token || '')}" class="btn btn-secondary" style="padding:6px 12px; font-size:0.8rem; min-height:34px; border-radius:8px;">Ver seguimiento</a>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      document.body.classList.add('modal-open');
+      document.getElementById('past-orders-modal').classList.add('open');
+    }
+
+    function closePastOrdersModal() {
+      document.body.classList.remove('modal-open');
+      document.getElementById('past-orders-modal').classList.remove('open');
+    }
+
+    function openIncidentsModal() {
+      closeTopNavMenu();
+      try {
+        const raw = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
+        const inp = document.getElementById('inc-order-num');
+        if (inp && !inp.value && Array.isArray(raw) && raw.length > 0 && raw[0].numero_comanda) {
+          inp.value = '#' + raw[0].numero_comanda;
+        }
+      } catch (_) {}
+      document.body.classList.add('modal-open');
+      document.getElementById('incidents-modal').classList.add('open');
+    }
+
+    function closeIncidentsModal() {
+      document.body.classList.remove('modal-open');
+      document.getElementById('incidents-modal').classList.remove('open');
+    }
+
+    async function handleIncidentSubmit(e) {
+      e.preventDefault();
+      const orderRef = document.getElementById('inc-order-num').value.trim();
+      const motivo = document.getElementById('inc-type').value;
+      const desc = document.getElementById('inc-desc').value.trim();
+      if (!orderRef || !desc) return;
+
+      const btn = document.getElementById('btn-submit-incident');
+      btn.disabled = true;
+      btn.textContent = 'Enviando incidencia...';
+
+      try {
+        const raw = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
+        const cleanNum = orderRef.replace('#', '').trim();
+        const matched = Array.isArray(raw) ? raw.find(o => String(o.numero_comanda) === cleanNum) : null;
+        if (matched && matched.tracking_token && window.supabaseClient) {
+          await window.supabaseClient.rpc('enviar_mensaje_cliente', {
+            p_token: matched.tracking_token,
+            p_texto: `[INCIDENCIA - ${motivo}] ${desc}`
+          });
+        }
+      } catch (_) {}
+
+      btn.disabled = false;
+      btn.textContent = 'Enviar incidencia al restaurante';
+      document.getElementById('inc-desc').value = '';
+      closeIncidentsModal();
+      if (typeof showToast === 'function') {
+        showToast('Incidencia registrada. El restaurante se pondrá en contacto contigo.', 'success');
+      }
+    }
+  </script>
 </body>
 </html>
