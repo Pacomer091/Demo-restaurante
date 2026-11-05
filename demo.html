@@ -1355,6 +1355,317 @@
       color: #dc2626;
       margin-top: 4px;
     }
+
+    /* =========================================================================
+       ESTILOS PROFESIONALES PARA AUTENTICACIÓN Y ÁREA DE CLIENTE (SUPABASE AUTH)
+       ========================================================================= */
+    .auth-modal-card {
+      max-width: 455px !important;
+      border-radius: 22px !important;
+    }
+
+    .auth-brand-hero {
+      text-align: center;
+      padding: 4px 4px 10px 4px;
+    }
+
+    .auth-brand-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+      border: 1.5px solid #fed7aa;
+      box-shadow: 0 6px 16px rgba(255, 85, 0, 0.12);
+      margin-bottom: 10px;
+    }
+
+    .auth-brand-badge img {
+      width: 30px;
+      height: 30px;
+      object-fit: contain;
+    }
+
+    .auth-hero-title {
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: #0f172a;
+      margin: 0 0 4px 0;
+      letter-spacing: -0.02em;
+    }
+
+    .auth-hero-subtitle {
+      font-size: 0.84rem;
+      color: #64748b;
+      margin: 0;
+      line-height: 1.45;
+    }
+
+    .auth-segmented-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: #f1f5f9;
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      gap: 4px;
+    }
+
+    .auth-seg-btn {
+      min-height: 40px;
+      border: none;
+      border-radius: 9px;
+      background: transparent;
+      font-family: inherit;
+      font-size: 0.86rem;
+      font-weight: 800;
+      color: #64748b;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .auth-seg-btn.active {
+      background: #ffffff;
+      color: #0f172a;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+    }
+
+    .auth-field-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .auth-field-icon {
+      position: absolute;
+      left: 13px;
+      color: #94a3b8;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      transition: color 0.2s ease;
+    }
+
+    .auth-input-with-icon {
+      padding-left: 40px !important;
+      min-height: 46px;
+      font-size: 0.92rem !important;
+      border-radius: 11px !important;
+      background: #f8fafc !important;
+      border: 1.5px solid #e2e8f0 !important;
+    }
+
+    .auth-input-with-icon:focus {
+      background: #ffffff !important;
+      border-color: var(--brand-orange) !important;
+      box-shadow: 0 0 0 3.5px rgba(255, 85, 0, 0.14) !important;
+    }
+
+    .auth-field-wrap:focus-within .auth-field-icon {
+      color: var(--brand-orange);
+    }
+
+    .auth-pwd-toggle {
+      position: absolute;
+      right: 10px;
+      background: none;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.15s, background 0.15s;
+    }
+
+    .auth-pwd-toggle:hover {
+      color: #334155;
+      background: #f1f5f9;
+    }
+
+    .auth-security-footer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #64748b;
+      padding-top: 6px;
+      border-top: 1px solid #f1f5f9;
+    }
+
+    /* TARJETA EJECUTIVA DE PERFIL (SESIÓN INICIADA) */
+    .profile-exec-banner {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      border-radius: 16px;
+      padding: 16px;
+      color: #ffffff;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .profile-exec-banner::before {
+      content: '';
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 85, 0, 0.32) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .profile-exec-top {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .profile-exec-avatar {
+      width: 54px;
+      height: 54px;
+      border-radius: 16px;
+      background: var(--brand-gradient);
+      color: #ffffff;
+      font-weight: 900;
+      font-size: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(255, 85, 0, 0.35);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      letter-spacing: -0.02em;
+    }
+
+    .profile-exec-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .profile-exec-name {
+      font-size: 1.08rem;
+      font-weight: 900;
+      color: #ffffff;
+      margin: 0 0 2px 0;
+      line-height: 1.25;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .profile-exec-email {
+      font-size: 0.8rem;
+      color: #cbd5e1;
+      margin: 0 0 7px 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .profile-verified-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(16, 185, 129, 0.16);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #6ee7b7;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 2px 9px;
+      border-radius: 999px;
+      letter-spacing: 0.02em;
+    }
+
+    .profile-stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      position: relative;
+      z-index: 1;
+    }
+
+    .profile-stat-item {
+      text-align: center;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 10px;
+      padding: 6px 4px;
+    }
+
+    .profile-stat-val {
+      font-size: 0.92rem;
+      font-weight: 900;
+      color: #ffffff;
+      display: block;
+      line-height: 1.2;
+    }
+
+    .profile-stat-lbl {
+      font-size: 0.68rem;
+      color: #94a3b8;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .profile-quick-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .profile-quick-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-height: 40px;
+      padding: 8px 10px;
+      border-radius: 11px;
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      color: #1e293b;
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .profile-quick-btn:hover {
+      background: #fff7ed;
+      border-color: #fed7aa;
+      color: var(--brand-orange);
+    }
+
+    .profile-section-heading {
+      font-size: 0.75rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #64748b;
+      margin: 2px 0 -4px 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1732,97 +2043,203 @@
 
   <!-- 9. MODAL: INICIAR SESIÓN / REGISTRO REAL CLIENTE (SUPABASE AUTH) -->
   <div class="modal-overlay" id="customer-auth-modal" onclick="if(event.target.id==='customer-auth-modal') closeCustomerAuthModal()">
-    <div class="modal-card" style="max-width:440px;">
+    <div class="modal-card auth-modal-card">
       <div class="sheet-drag-handle"></div>
-      <div class="modal-header">
-        <h3 class="modal-title" id="cust-auth-modal-title">Accede a tu cuenta</h3>
+      <div class="modal-header" style="border-bottom:1px solid #f1f5f9; padding-bottom:12px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="width:8px; height:8px; border-radius:50%; background:var(--brand-orange); display:inline-block;"></span>
+          <h3 class="modal-title" id="cust-auth-modal-title" style="font-size:1.05rem; letter-spacing:-0.01em;">Área de Cliente</h3>
+        </div>
         <button onclick="closeCustomerAuthModal()" class="btn-close-modal" aria-label="Cerrar">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
       </div>
-      <div class="modal-body" style="gap:14px;">
+      <div class="modal-body" style="gap:14px; padding-top:14px;">
 
         <!-- Alerta de estado o errores de Auth -->
-        <div id="cust-auth-alert" style="display:none; padding:10px 12px; border-radius:10px; font-size:0.84rem; font-weight:700; line-height:1.4; align-items:flex-start; gap:8px;">
+        <div id="cust-auth-alert" style="display:none; padding:11px 13px; border-radius:12px; font-size:0.83rem; font-weight:700; line-height:1.4; align-items:flex-start; gap:9px;">
           <span id="cust-auth-alert-text"></span>
         </div>
 
-        <!-- VISTA A: NO AUTENTICADO (LOGIN / REGISTRO) -->
+        <!-- VISTA A: NO AUTENTICADO (LOGIN / REGISTRO PROFESIONAL) -->
         <div id="cust-auth-guest-view" style="display:flex; flex-direction:column; gap:14px;">
+          <div class="auth-brand-hero">
+            <div class="auth-brand-badge">
+              <img src="img/logo.png" alt="La Fogoneta">
+            </div>
+            <h4 class="auth-hero-title" id="auth-guest-hero-title">Bienvenido a La Fogoneta</h4>
+            <p class="auth-hero-subtitle" id="auth-guest-hero-subtitle">Inicia sesión para guardar tu dirección, tramitar pedidos en un clic y seguir tus comandas en vivo.</p>
+          </div>
+
           <!-- Selector de Pestaña: Iniciar Sesión vs Crear Cuenta -->
-          <div class="service-toggle-wrap">
-            <button type="button" class="service-btn active" id="tab-btn-auth-login" onclick="switchCustomerAuthTab('login')">
+          <div class="auth-segmented-tabs">
+            <button type="button" class="auth-seg-btn active" id="tab-btn-auth-login" onclick="switchCustomerAuthTab('login')">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
               <span>Iniciar sesión</span>
             </button>
-            <button type="button" class="service-btn" id="tab-btn-auth-register" onclick="switchCustomerAuthTab('register')">
+            <button type="button" class="auth-seg-btn" id="tab-btn-auth-register" onclick="switchCustomerAuthTab('register')">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
               <span>Crear cuenta</span>
             </button>
           </div>
 
-          <!-- Formulario Login / Registro -->
-          <form onsubmit="handleCustomerAuthSubmit(event)" id="customer-auth-form" style="display:flex; flex-direction:column; gap:10px;">
+          <!-- Formulario Login / Registro con iconos -->
+          <form onsubmit="handleCustomerAuthSubmit(event)" id="customer-auth-form" style="display:flex; flex-direction:column; gap:11px;">
             <div class="form-group" style="margin:0;">
-              <label for="auth-cust-email" class="form-label">Correo electrónico</label>
-              <input type="email" id="auth-cust-email" class="form-input" required placeholder="tu@correo.com" autocomplete="email">
+              <label for="auth-cust-email" class="form-label" style="font-size:0.78rem; color:#475569; margin-bottom:4px;">Correo electrónico</label>
+              <div class="auth-field-wrap">
+                <span class="auth-field-icon">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                </span>
+                <input type="email" id="auth-cust-email" class="form-input auth-input-with-icon" required placeholder="nombre@ejemplo.com" autocomplete="email">
+              </div>
             </div>
 
             <div class="form-group" style="margin:0;">
-              <label for="auth-cust-password" class="form-label">Contraseña</label>
-              <input type="password" id="auth-cust-password" class="form-input" required minlength="6" placeholder="Mínimo 6 caracteres" autocomplete="current-password">
+              <label for="auth-cust-password" class="form-label" style="font-size:0.78rem; color:#475569; margin-bottom:4px;">Contraseña</label>
+              <div class="auth-field-wrap">
+                <span class="auth-field-icon">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                </span>
+                <input type="password" id="auth-cust-password" class="form-input auth-input-with-icon" style="padding-right:42px !important;" required minlength="6" placeholder="Mínimo 6 caracteres" autocomplete="current-password">
+                <button type="button" class="auth-pwd-toggle" onclick="toggleCustPasswordVisibility()" aria-label="Mostrar u ocultar contraseña" title="Mostrar contraseña">
+                  <svg id="auth-cust-eye-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+              </div>
             </div>
 
             <!-- Campos adicionales exclusivos para Registro -->
-            <div id="auth-register-extra-fields" style="display:none; flex-direction:column; gap:10px;">
+            <div id="auth-register-extra-fields" style="display:none; flex-direction:column; gap:11px; padding-top:4px; border-top:1px dashed #e2e8f0;">
               <div class="form-group" style="margin:0;">
-                <label for="auth-cust-name" class="form-label">Tu nombre completo</label>
-                <input type="text" id="auth-cust-name" class="form-input" placeholder="Ej. Carlos Mendoza" autocomplete="name">
+                <label for="auth-cust-name" class="form-label" style="font-size:0.78rem; color:#475569; margin-bottom:4px;">Nombre y apellidos</label>
+                <div class="auth-field-wrap">
+                  <span class="auth-field-icon">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                  </span>
+                  <input type="text" id="auth-cust-name" class="form-input auth-input-with-icon" placeholder="Ej. Carlos Mendoza" autocomplete="name">
+                </div>
               </div>
               <div class="form-group" style="margin:0;">
-                <label for="auth-cust-phone" class="form-label">Teléfono móvil</label>
-                <input type="tel" id="auth-cust-phone" class="form-input" placeholder="Ej. 654 321 000" autocomplete="tel">
+                <label for="auth-cust-phone" class="form-label" style="font-size:0.78rem; color:#475569; margin-bottom:4px;">Teléfono móvil de contacto</label>
+                <div class="auth-field-wrap">
+                  <span class="auth-field-icon">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                  </span>
+                  <input type="tel" id="auth-cust-phone" class="form-input auth-input-with-icon" placeholder="Ej. 654 321 000" autocomplete="tel">
+                </div>
               </div>
               <div class="form-group" style="margin:0;">
-                <label for="auth-cust-address" class="form-label">Dirección habitual de entrega (opcional)</label>
-                <input type="text" id="auth-cust-address" class="form-input" placeholder="Calle, número, piso y puerta" autocomplete="street-address">
+                <label for="auth-cust-address" class="form-label" style="font-size:0.78rem; color:#475569; margin-bottom:4px;">Dirección de entrega predeterminada</label>
+                <div class="auth-field-wrap">
+                  <span class="auth-field-icon">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                  </span>
+                  <input type="text" id="auth-cust-address" class="form-input auth-input-with-icon" placeholder="Calle, número, piso y puerta" autocomplete="street-address">
+                </div>
               </div>
             </div>
 
-            <button type="submit" id="btn-cust-auth-submit" class="btn btn-primary" style="width:100%; min-height:48px; font-weight:800; margin-top:4px; justify-content:center;">
-              <span id="btn-cust-auth-submit-label">Iniciar sesión</span>
+            <button type="submit" id="btn-cust-auth-submit" class="btn btn-primary" style="width:100%; min-height:48px; font-weight:800; font-size:0.95rem; margin-top:4px; justify-content:center; border-radius:12px; box-shadow:0 6px 18px rgba(255, 85, 0, 0.28);">
+              <span id="btn-cust-auth-submit-label">Acceder a mi cuenta</span>
             </button>
           </form>
+
+          <div class="auth-security-footer">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            <span>Conexión cifrada y protegida con Supabase Auth</span>
+          </div>
         </div>
 
-        <!-- VISTA B: PERFIL DE USUARIO AUTENTICADO -->
+        <!-- VISTA B: PERFIL DE USUARIO AUTENTICADO (DISEÑO EJECUTIVO PREMIUM) -->
         <div id="cust-auth-profile-view" style="display:none; flex-direction:column; gap:14px;">
-          <div style="display:flex; align-items:center; gap:12px; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px;">
-            <div id="cust-profile-avatar" style="width:46px; height:46px; border-radius:50%; background:var(--brand-gradient); color:#ffffff; font-weight:900; font-size:1.15rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden;">
-              U
+          <!-- Tarjeta de Identidad Ejecutiva -->
+          <div class="profile-exec-banner">
+            <div class="profile-exec-top">
+              <div id="cust-profile-avatar" class="profile-exec-avatar">U</div>
+              <div class="profile-exec-info">
+                <h4 id="cust-profile-fullname" class="profile-exec-name">Cliente Fogonazo</h4>
+                <div id="cust-profile-email-badge" class="profile-exec-email">usuario@correo.com</div>
+                <div id="cust-profile-provider-badge" class="profile-verified-pill">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <span>Cuenta verificada • Fogonazo ID</span>
+                </div>
+              </div>
             </div>
-            <div style="flex:1; min-width:0;">
-              <div id="cust-profile-email-badge" style="font-size:0.92rem; font-weight:800; color:var(--text-main); word-break:break-all;">usuario@correo.com</div>
-              <div id="cust-profile-provider-badge" style="font-size:0.76rem; color:#059669; font-weight:700; display:flex; align-items:center; gap:4px; margin-top:2px;">
-                <span>● Sesión verificada activa</span>
+
+            <!-- Métricas de la cuenta -->
+            <div class="profile-stats-row">
+              <div class="profile-stat-item">
+                <span class="profile-stat-val" id="profile-stat-orders-count">0</span>
+                <span class="profile-stat-lbl">Pedidos</span>
+              </div>
+              <div class="profile-stat-item">
+                <span class="profile-stat-val" id="profile-stat-active-status" style="color:#fbbf24;">Sin curso</span>
+                <span class="profile-stat-lbl">Estado actual</span>
+              </div>
+              <div class="profile-stat-item">
+                <span class="profile-stat-val" id="profile-stat-member-since">2026</span>
+                <span class="profile-stat-lbl">Miembro</span>
               </div>
             </div>
           </div>
 
+          <!-- Accesos rápidos del cliente -->
+          <div class="profile-quick-actions">
+            <button type="button" class="profile-quick-btn" onclick="closeCustomerAuthModal(); openPastOrdersModal();">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+              <span>Mis Pedidos</span>
+            </button>
+            <button type="button" class="profile-quick-btn" onclick="closeCustomerAuthModal(); openIncidentsModal();">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+              <span>Soporte / Chat</span>
+            </button>
+          </div>
+
+          <!-- Formulario de Datos de Entrega Guardados -->
+          <div class="profile-section-heading">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            <span>Datos predeterminados de entrega</span>
+          </div>
+
           <form onsubmit="handleSaveCustomerProfileData(event)" style="display:flex; flex-direction:column; gap:10px;">
             <div class="form-group" style="margin:0;">
-              <label for="profile-cust-name" class="form-label">Nombre para tus pedidos</label>
-              <input type="text" id="profile-cust-name" class="form-input" required placeholder="Ej. Carlos Mendoza">
+              <label for="profile-cust-name" class="form-label" style="font-size:0.77rem; color:#475569; margin-bottom:3px;">Nombre completo del receptor</label>
+              <div class="auth-field-wrap">
+                <span class="auth-field-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                </span>
+                <input type="text" id="profile-cust-name" class="form-input auth-input-with-icon" required placeholder="Ej. Carlos Mendoza">
+              </div>
             </div>
             <div class="form-group" style="margin:0;">
-              <label for="profile-cust-phone" class="form-label">Teléfono móvil de contacto</label>
-              <input type="tel" id="profile-cust-phone" class="form-input" required placeholder="Ej. 654 321 000">
+              <label for="profile-cust-phone" class="form-label" style="font-size:0.77rem; color:#475569; margin-bottom:3px;">Teléfono móvil para el repartidor</label>
+              <div class="auth-field-wrap">
+                <span class="auth-field-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                </span>
+                <input type="tel" id="profile-cust-phone" class="form-input auth-input-with-icon" required placeholder="Ej. 654 321 000">
+              </div>
             </div>
             <div class="form-group" style="margin:0;">
-              <label for="profile-cust-address" class="form-label">Dirección habitual de entrega</label>
-              <input type="text" id="profile-cust-address" class="form-input" placeholder="Calle, número, piso y puerta">
+              <label for="profile-cust-address" class="form-label" style="font-size:0.77rem; color:#475569; margin-bottom:3px;">Dirección habitual de reparto</label>
+              <div class="auth-field-wrap">
+                <span class="auth-field-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                </span>
+                <input type="text" id="profile-cust-address" class="form-input auth-input-with-icon" placeholder="Calle, número, piso y puerta">
+              </div>
             </div>
-            <div style="display:flex; gap:8px; margin-top:6px;">
-              <button type="submit" id="btn-save-cust-profile" class="btn btn-primary" style="flex:1; min-height:46px; font-weight:800; justify-content:center;">Guardar mis datos</button>
-              <button type="button" onclick="logoutCustomerProfile()" class="btn btn-secondary" style="min-height:46px; font-weight:800; color:#dc2626; border-color:#fecaca; background:#fff5f5;">Cerrar sesión</button>
+            <div style="display:flex; gap:8px; margin-top:6px; padding-top:8px; border-top:1px solid #f1f5f9;">
+              <button type="submit" id="btn-save-cust-profile" class="btn btn-primary" style="flex:1; min-height:46px; font-weight:800; border-radius:11px; justify-content:center;">
+                <span>Guardar cambios</span>
+              </button>
+              <button type="button" onclick="logoutCustomerProfile()" class="btn btn-secondary" style="min-height:46px; padding:0 14px; font-weight:800; border-radius:11px; color:#dc2626; border-color:#fecaca; background:#fff5f5; display:inline-flex; align-items:center; gap:6px;" title="Cerrar sesión en este dispositivo">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                <span>Salir</span>
+              </button>
             </div>
           </form>
         </div>
@@ -1978,6 +2395,19 @@
       if (box) box.style.display = 'none';
     }
 
+    function toggleCustPasswordVisibility() {
+      const inp = document.getElementById('auth-cust-password');
+      const icon = document.getElementById('auth-cust-eye-icon');
+      if (!inp || !icon) return;
+      if (inp.type === 'password') {
+        inp.type = 'text';
+        icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
+      } else {
+        inp.type = 'password';
+        icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+      }
+    }
+
     function switchCustomerAuthTab(mode) {
       currentCustomerAuthMode = mode === 'register' ? 'register' : 'login';
       hideCustAuthAlert();
@@ -1986,6 +2416,8 @@
       const tabReg = document.getElementById('tab-btn-auth-register');
       const extraFields = document.getElementById('auth-register-extra-fields');
       const submitLabel = document.getElementById('btn-cust-auth-submit-label');
+      const heroTitle = document.getElementById('auth-guest-hero-title');
+      const heroSub = document.getElementById('auth-guest-hero-subtitle');
       const nameInp = document.getElementById('auth-cust-name');
       const phoneInp = document.getElementById('auth-cust-phone');
 
@@ -1997,8 +2429,19 @@
       }
       if (nameInp) nameInp.required = currentCustomerAuthMode === 'register';
       if (phoneInp) phoneInp.required = currentCustomerAuthMode === 'register';
+
+      if (heroTitle) {
+        heroTitle.textContent = currentCustomerAuthMode === 'register'
+          ? 'Crea tu cuenta en La Fogoneta'
+          : 'Bienvenido a La Fogoneta';
+      }
+      if (heroSub) {
+        heroSub.textContent = currentCustomerAuthMode === 'register'
+          ? 'Regístrate en segundos para guardar tus datos de reparto y pedir sin rellenar formularios.'
+          : 'Inicia sesión para guardar tu dirección, tramitar pedidos en un clic y seguir tus comandas en vivo.';
+      }
       if (submitLabel) {
-        submitLabel.textContent = currentCustomerAuthMode === 'register' ? 'Crear cuenta ahora' : 'Iniciar sesión';
+        submitLabel.textContent = currentCustomerAuthMode === 'register' ? 'Crear mi cuenta ahora' : 'Acceder a mi cuenta';
       }
     }
 
@@ -2083,26 +2526,61 @@
       if (profile && (currentAuthSessionUser || profile.email)) {
         guestView.style.display = 'none';
         profileView.style.display = 'flex';
-        if (titleEl) titleEl.textContent = 'Mi Cuenta';
+        if (titleEl) titleEl.textContent = 'Mi Perfil de Cliente';
 
+        const fullNameEl = document.getElementById('cust-profile-fullname');
         const emailBadge = document.getElementById('cust-profile-email-badge');
         const provBadge = document.getElementById('cust-profile-provider-badge');
         const avatarEl = document.getElementById('cust-profile-avatar');
 
-        if (emailBadge) emailBadge.textContent = profile.email || profile.nombre || 'Usuario autenticado';
+        const displayName = (profile.nombre || (profile.email ? profile.email.split('@')[0] : 'Cliente')).trim();
+        if (fullNameEl) fullNameEl.textContent = displayName;
+        if (emailBadge) emailBadge.textContent = profile.email || 'Sesión activa';
         if (provBadge) {
-          const isGoogle = profile.provider === 'google';
-          provBadge.innerHTML = isGoogle
-            ? '<span>✓ Conectado con Google</span>'
-            : '<span>● Sesión verificada activa</span>';
+          provBadge.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Cuenta verificada • Fogonazo ID</span>`;
         }
         if (avatarEl) {
           if (profile.avatar_url) {
             avatarEl.innerHTML = `<img src="${profile.avatar_url}" alt="" style="width:100%; height:100%; object-fit:cover;">`;
           } else {
-            const initial = (profile.nombre || profile.email || 'U').trim().charAt(0).toUpperCase();
-            avatarEl.textContent = initial;
+            const parts = displayName.split(/\s+/).filter(Boolean);
+            const initials = parts.length >= 2
+              ? (parts[0][0] + parts[1][0]).toUpperCase()
+              : displayName.slice(0, 2).toUpperCase();
+            avatarEl.textContent = initials || 'CL';
           }
+        }
+
+        // Calcular estadísticas de pedidos del cliente
+        let localOrders = [];
+        try {
+          const raw = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
+          if (Array.isArray(raw)) {
+            localOrders = raw.filter(o => o && o.id !== 'ped_demo_initial' && o.id !== 'ped_07be7a128b85439aa2222e2155ac5a46');
+          }
+        } catch (_) {}
+
+        const ordersCountEl = document.getElementById('profile-stat-orders-count');
+        const activeStatusEl = document.getElementById('profile-stat-active-status');
+        const memberSinceEl = document.getElementById('profile-stat-member-since');
+
+        if (ordersCountEl) ordersCountEl.textContent = String(localOrders.length);
+        if (activeStatusEl) {
+          const hasActive = localOrders.some(o => {
+            const st = String(o.estado || 'recibido').toLowerCase();
+            return st !== 'entregado' && st !== 'cancelado';
+          });
+          activeStatusEl.textContent = hasActive ? 'En preparación' : 'Al día';
+          activeStatusEl.style.color = hasActive ? '#34d399' : '#e2e8f0';
+        }
+        if (memberSinceEl) {
+          let year = '2026';
+          if (currentAuthSessionUser && currentAuthSessionUser.created_at) {
+            try {
+              year = String(new Date(currentAuthSessionUser.created_at).getFullYear());
+            } catch (_) {}
+          }
+          memberSinceEl.textContent = year;
         }
 
         const pName = document.getElementById('profile-cust-name');
@@ -2114,7 +2592,7 @@
       } else {
         guestView.style.display = 'flex';
         profileView.style.display = 'none';
-        if (titleEl) titleEl.textContent = 'Accede a tu cuenta';
+        if (titleEl) titleEl.textContent = 'Área de Cliente';
       }
     }
 
@@ -2256,7 +2734,7 @@
       } finally {
         if (submitBtn) submitBtn.disabled = false;
         if (submitLabel) {
-          submitLabel.textContent = currentCustomerAuthMode === 'register' ? 'Crear cuenta ahora' : 'Iniciar sesión';
+          submitLabel.textContent = currentCustomerAuthMode === 'register' ? 'Crear mi cuenta ahora' : 'Acceder a mi cuenta';
         }
       }
     }
@@ -2313,7 +2791,7 @@
       } finally {
         if (btn) {
           btn.disabled = false;
-          btn.textContent = 'Guardar mis datos';
+          btn.textContent = 'Guardar cambios';
         }
       }
     }
