@@ -386,6 +386,145 @@
     .btn-delete-order:active {
       transform: scale(0.96);
     }
+
+    .control-tabs-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.85rem;
+    }
+
+    .btn-control-tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 16px;
+      border-radius: 10px;
+      border: 1.5px solid #cbd5e1;
+      background: #ffffff;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 0.86rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+
+    .btn-control-tab:hover {
+      border-color: #94a3b8;
+      color: var(--text-main);
+    }
+
+    .btn-control-tab.active {
+      background: var(--text-main);
+      color: #ffffff;
+      border-color: var(--text-main);
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+    }
+
+    .btn-control-tab.tab-incidents {
+      border-color: #fca5a5;
+      color: #b91c1c;
+      background: #fff5f5;
+    }
+
+    .btn-control-tab.tab-incidents.active {
+      background: #dc2626;
+      color: #ffffff;
+      border-color: #dc2626;
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+    }
+
+    .tab-count-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 22px;
+      height: 22px;
+      padding: 0 6px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 900;
+      background: rgba(15, 23, 42, 0.08);
+      color: inherit;
+    }
+
+    .btn-control-tab.active .tab-count-pill {
+      background: rgba(255, 255, 255, 0.22);
+      color: #ffffff;
+    }
+
+    .delivered-locked-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      background: #f5f3ff;
+      border: 1.5px solid #ddd6fe;
+      color: #6d28d9;
+      font-size: 0.84rem;
+      font-weight: 800;
+      margin-top: 4px;
+    }
+
+    .order-incidents-box {
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      font-size: 0.82rem;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: #fff5f5;
+      border: 1.5px solid #fecaca;
+    }
+
+    .order-incidents-box.no-incidents {
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      color: var(--text-muted);
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .incident-item-card {
+      background: #ffffff;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .incident-item-card.resolved {
+      border-color: #bbf7d0;
+      background: #f0fdf4;
+      opacity: 0.85;
+    }
+
+    .btn-resolve-incident {
+      align-self: flex-start;
+      margin-top: 2px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid #16a34a;
+      background: #16a34a;
+      color: #ffffff;
+      font-size: 0.74rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .btn-resolve-incident:hover {
+      background: #15803d;
+    }
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -460,6 +599,27 @@
       </div>
     </div>
 
+    <!-- Pestañas de Comandas en Curso / Pedidos Entregados / Incidencias Pendientes -->
+    <div class="control-tabs-bar">
+      <button type="button" class="btn-control-tab active" id="tab-btn-activas" onclick="switchControlTab('activas')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        <span>Comandas en curso</span>
+        <span class="tab-count-pill" id="count-activas">0</span>
+      </button>
+
+      <button type="button" class="btn-control-tab" id="tab-btn-entregados" onclick="switchControlTab('entregados')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        <span>Pedidos entregados</span>
+        <span class="tab-count-pill" id="count-entregados">0</span>
+      </button>
+
+      <button type="button" class="btn-control-tab tab-incidents" id="tab-btn-incidencias" onclick="switchControlTab('incidencias')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <span>Incidencias pendientes</span>
+        <span class="tab-count-pill" id="count-incidencias">0</span>
+      </button>
+    </div>
+
     <div class="orders-grid" id="orders-container">
       <div class="empty-orders">Cargando comandas en vivo...</div>
     </div>
@@ -472,6 +632,29 @@
     let REST_ID = "rest_demo";
     let CURRENT_USER_PROFILE = null;
     let ordersList = [];
+    let currentControlTab = 'activas'; // 'activas' | 'entregados' | 'incidencias'
+
+    let RESOLVED_INCIDENT_IDS = new Set();
+    try {
+      const savedRes = JSON.parse(localStorage.getItem('fogon_resolved_incidents') || '[]');
+      if (Array.isArray(savedRes)) savedRes.forEach(id => RESOLVED_INCIDENT_IDS.add(id));
+    } catch (_) {}
+
+    function markIncidentResolvedLocal(id) {
+      RESOLVED_INCIDENT_IDS.add(id);
+      try {
+        localStorage.setItem('fogon_resolved_incidents', JSON.stringify(Array.from(RESOLVED_INCIDENT_IDS)));
+      } catch (_) {}
+    }
+
+    function switchControlTab(tab) {
+      currentControlTab = tab;
+      ['activas', 'entregados', 'incidencias'].forEach(t => {
+        const btn = document.getElementById('tab-btn-' + t);
+        if (btn) btn.classList.toggle('active', t === tab);
+      });
+      renderOrders();
+    }
 
     // Función de saneamiento XSS para proteger el panel
     function escapeHtml(str) {
@@ -615,19 +798,62 @@
 
             if (!error && Array.isArray(data)) {
               supaSuccess = true;
+              let chatRows = [];
+              try {
+                const { data: cData } = await window.supabaseClient
+                  .from('mensajes_chat')
+                  .select('*')
+                  .eq('restaurante_id', REST_ID)
+                  .order('created_at', { ascending: true });
+                if (Array.isArray(cData)) chatRows = cData;
+              } catch (_) {}
+
+              // Detectar incidencias resueltas marcadas por el restaurante
+              chatRows.forEach(m => {
+                if (m.remitente === 'restaurante' && typeof m.texto === 'string' && m.texto.startsWith('[INCIDENCIA_RESUELTA:')) {
+                  const matchId = m.texto.replace('[INCIDENCIA_RESUELTA:', '').replace(']', '').trim();
+                  if (matchId) RESOLVED_INCIDENT_IDS.add(matchId);
+                }
+              });
+
               supaOrders = data
                 .filter(o => !FAKE_ORDER_IDS.has(o.id) && !DELETED_ORDER_IDS.has(o.id))
-                .map(o => ({
-                  ...o,
-                  estado: PENDING_STATUS.has(o.id) ? PENDING_STATUS.get(o.id) : o.estado,
-                  subtotal_formatted: ((o.subtotal_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €',
-                  gastos_envio_formatted: ((o.gastos_envio_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €',
-                  total_formatted: ((o.total_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €',
-                  lineas: (o.lineas_de_pedido || []).map(l => ({
-                    ...l,
-                    extras: Array.isArray(l.extras_json) ? l.extras_json : (typeof l.extras_json === 'string' ? JSON.parse(l.extras_json) : [])
-                  }))
-                }));
+                .map(o => {
+                  const orderChats = chatRows.filter(m => m.pedido_id === o.id);
+                  const incidencias = orderChats
+                    .filter(m => m.remitente === 'cliente' && typeof m.texto === 'string' && m.texto.startsWith('[INCIDENCIA'))
+                    .map(m => {
+                      const raw = m.texto || '';
+                      const closeBracket = raw.indexOf(']');
+                      let motivo = 'Incidencia';
+                      let detalle = raw;
+                      if (closeBracket !== -1) {
+                        motivo = raw.substring(1, closeBracket).replace(/^INCIDENCIA\s*-\s*/i, '').trim() || 'Incidencia';
+                        detalle = raw.substring(closeBracket + 1).trim();
+                      }
+                      return {
+                        id: m.id,
+                        pedido_id: o.id,
+                        motivo,
+                        texto: detalle,
+                        created_at: m.created_at,
+                        resuelta: RESOLVED_INCIDENT_IDS.has(m.id)
+                      };
+                    });
+
+                  return {
+                    ...o,
+                    estado: PENDING_STATUS.has(o.id) ? PENDING_STATUS.get(o.id) : o.estado,
+                    subtotal_formatted: ((o.subtotal_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €',
+                    gastos_envio_formatted: ((o.gastos_envio_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €',
+                    total_formatted: ((o.total_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €',
+                    incidencias,
+                    lineas: (o.lineas_de_pedido || []).map(l => ({
+                      ...l,
+                      extras: Array.isArray(l.extras_json) ? l.extras_json : (typeof l.extras_json === 'string' ? JSON.parse(l.extras_json) : [])
+                    }))
+                  };
+                });
             } else if (error) {
               console.warn('Error cargando pedidos de Supabase:', error);
             }
@@ -650,15 +876,44 @@
           localOrders = [];
         }
 
+        // Fusionar incidencias guardadas localmente por si hubiera alguna sin sincronizar
+        let localIncidents = [];
+        try {
+          localIncidents = JSON.parse(localStorage.getItem('fogon_incidents') || '[]');
+        } catch (_) { localIncidents = []; }
+
         const map = new Map();
         supaOrders.forEach(o => map.set(o.id, o));
         if (!supaSuccess) {
           localOrders.forEach(o => {
-            if (!map.has(o.id)) map.set(o.id, o);
+            if (!map.has(o.id)) map.set(o.id, { ...o, incidencias: o.incidencias || [] });
           });
         }
 
-        ordersList = Array.from(map.values()).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        ordersList = Array.from(map.values()).map(o => {
+          const existingIncs = Array.isArray(o.incidencias) ? [...o.incidencias] : [];
+          const extraLocal = (Array.isArray(localIncidents) ? localIncidents : []).filter(
+            inc => (inc.pedido_id && inc.pedido_id === o.id) || (inc.numero_comanda && String(inc.numero_comanda) === String(o.numero_comanda))
+          );
+          extraLocal.forEach(inc => {
+            if (!existingIncs.some(e => e.id === inc.id || (e.texto === inc.texto && e.motivo === inc.motivo))) {
+              existingIncs.push({
+                id: inc.id || ('inc_loc_' + o.id),
+                pedido_id: o.id,
+                motivo: inc.motivo || 'Incidencia',
+                texto: inc.texto || '',
+                created_at: inc.created_at || o.created_at,
+                resuelta: RESOLVED_INCIDENT_IDS.has(inc.id)
+              });
+            }
+          });
+          return {
+            ...o,
+            incidencias: existingIncs,
+            incidenciasPendientes: existingIncs.filter(i => !i.resuelta)
+          };
+        }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
         renderOrders();
         return;
       }
@@ -673,23 +928,83 @@
       }
     }
 
+    async function resolveIncident(pedidoId, incidentId) {
+      markIncidentResolvedLocal(incidentId);
+      ordersList.forEach(o => {
+        if (o.id === pedidoId && Array.isArray(o.incidencias)) {
+          o.incidencias.forEach(inc => {
+            if (inc.id === incidentId) inc.resuelta = true;
+          });
+          o.incidenciasPendientes = o.incidencias.filter(i => !i.resuelta);
+        }
+      });
+      renderOrders();
+
+      if (window.supabaseClient) {
+        try {
+          await window.supabaseClient.from('mensajes_chat').insert({
+            id: 'msg_res_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+            pedido_id: pedidoId,
+            restaurante_id: REST_ID,
+            remitente: 'restaurante',
+            texto: `[INCIDENCIA_RESUELTA:${incidentId}]`
+          });
+        } catch (e) {
+          console.warn('Error guardando resolución de incidencia:', e);
+        }
+      }
+      showToast('Incidencia marcada como resuelta', 'success');
+    }
+
     function renderOrders() {
       const container = document.getElementById('orders-container');
       if (!container) return;
 
-      if (!ordersList || ordersList.length === 0) {
+      const allOrders = ordersList || [];
+      const activeOrders = allOrders.filter(o => (o.estado || 'recibido') !== 'entregado');
+      const deliveredOrders = allOrders.filter(o => o.estado === 'entregado');
+      const ordersWithPendingIncidents = allOrders.filter(o => (o.incidenciasPendientes || []).length > 0);
+      const totalPendingIncidents = allOrders.reduce((acc, o) => acc + ((o.incidenciasPendientes || []).length), 0);
+
+      const cAct = document.getElementById('count-activas');
+      const cEnt = document.getElementById('count-entregados');
+      const cInc = document.getElementById('count-incidencias');
+      if (cAct) cAct.textContent = activeOrders.length;
+      if (cEnt) cEnt.textContent = deliveredOrders.length;
+      if (cInc) cInc.textContent = totalPendingIncidents;
+
+      let filteredOrders = activeOrders;
+      if (currentControlTab === 'entregados') {
+        filteredOrders = deliveredOrders;
+      } else if (currentControlTab === 'incidencias') {
+        filteredOrders = ordersWithPendingIncidents;
+      }
+
+      if (!filteredOrders || filteredOrders.length === 0) {
+        const emptyTitle = currentControlTab === 'entregados'
+          ? 'No hay pedidos entregados todavía'
+          : currentControlTab === 'incidencias'
+          ? 'No hay incidencias pendientes'
+          : 'No hay comandas en curso';
+        const emptySub = currentControlTab === 'entregados'
+          ? 'Cuando marques una comanda como entregada pasará automáticamente a este apartado.'
+          : currentControlTab === 'incidencias'
+          ? 'Todas las incidencias de clientes han sido atendidas.'
+          : 'Los nuevos pedidos de tus clientes aparecerán aquí automáticamente.';
+
         container.innerHTML = `
           <div class="empty-orders">
             <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" style="margin-bottom:8px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
-            <p style="font-weight:700; color:var(--text-main); margin:0;">No hay comandas activas</p>
-            <span style="font-size:0.82rem;">Los nuevos pedidos de tus clientes aparecerán aquí automáticamente.</span>
+            <p style="font-weight:700; color:var(--text-main); margin:0;">${emptyTitle}</p>
+            <span style="font-size:0.82rem;">${emptySub}</span>
           </div>
         `;
         return;
       }
 
-      container.innerHTML = ordersList.map(order => {
+      container.innerHTML = filteredOrders.map(order => {
         const estado = order.estado || 'recibido';
+        const isDelivered = estado === 'entregado';
         const serviceLabel = order.tipo_servicio === 'delivery' ? 'Domicilio' : 'Recogida';
         const serviceClass = order.tipo_servicio === 'delivery' ? 'service-delivery' : 'service-recogida';
 
@@ -712,8 +1027,77 @@
         const isStatic = Boolean(window.supabaseClient) || window.location.pathname.endsWith('.html') || window.location.hostname.includes('github.io');
         const trackingHref = isStatic ? `seguimiento.html?token=${order.tracking_token}` : `/pedido/${order.tracking_token}`;
 
+        const incs = order.incidencias || [];
+        let incidentsHtml = '';
+        if (incs.length > 0) {
+          incidentsHtml = `
+            <div class="order-incidents-box">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <strong style="color:#b91c1c; font-size:0.8rem; display:inline-flex; align-items:center; gap:5px;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                  Incidencias del cliente (${incs.length})
+                </strong>
+              </div>
+              ${incs.map(inc => `
+                <div class="incident-item-card ${inc.resuelta ? 'resolved' : ''}">
+                  <div style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
+                    <strong style="color:${inc.resuelta ? '#15803d' : '#991b1b'}; font-size:0.8rem;">${escapeHtml(inc.motivo)}</strong>
+                    <span style="font-size:0.7rem; color:var(--text-muted);">${inc.created_at ? new Date(inc.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+                  </div>
+                  <div style="color:var(--text-main); font-size:0.8rem;">${escapeHtml(inc.texto)}</div>
+                  ${inc.resuelta
+                    ? `<span style="font-size:0.72rem; font-weight:800; color:#15803d;">✓ Incidencia resuelta</span>`
+                    : `<button type="button" class="btn-resolve-incident" onclick="resolveIncident('${order.id}', '${inc.id}')">Marcar incidencia como resuelta</button>`
+                  }
+                </div>
+              `).join('')}
+            </div>
+          `;
+        } else if (isDelivered) {
+          incidentsHtml = `
+            <div class="order-incidents-box no-incidents">
+              <span>Sin incidencias registradas por el cliente</span>
+              <span style="font-weight:700; color:#10b981;">✓ OK</span>
+            </div>
+          `;
+        }
+
+        const actionsHtml = isDelivered
+          ? `
+            <div class="delivered-locked-bar">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+              <span>Entregado (Estado finalizado)</span>
+            </div>
+          `
+          : `
+            <div>
+              <a href="${trackingHref}" target="_blank" class="tracking-link-btn">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <span>Ver pantalla de seguimiento del cliente</span>
+              </a>
+            </div>
+
+            <div class="order-actions-bar">
+              <button onclick="setOrderStatus('${order.id}', 'recibido')" class="btn-status ${estado === 'recibido' ? 'active-recibido' : ''}">
+                <span>Recibido</span>
+              </button>
+              <button onclick="setOrderStatus('${order.id}', 'cocina')" class="btn-status ${estado === 'cocina' ? 'active-cocina' : ''}">
+                <span>En Cocina</span>
+              </button>
+              <button onclick="setOrderStatus('${order.id}', 'listo')" class="btn-status ${estado === 'listo' ? 'active-listo' : ''}">
+                <span>Listo / Envío</span>
+              </button>
+              <button onclick="setOrderStatus('${order.id}', 'entregado')" class="btn-status ${estado === 'entregado' ? 'active-entregado' : ''}" style="grid-column: span 2;">
+                <span>Marcar Entregado</span>
+              </button>
+              <button onclick="setOrderStatus('${order.id}', 'cancelado')" class="btn-status btn-cancel" style="grid-column: span 1;">
+                <span>Cancelar</span>
+              </button>
+            </div>
+          `;
+
         return `
-          <div class="order-card status-${estado}" id="card-${order.id}">
+          <div class="order-card status-${estado}" id="card-${order.id}" style="${isDelivered ? 'opacity:1;' : ''}">
             <div class="order-card-header">
               <div>
                 <span class="order-num">#${order.numero_comanda}</span>
@@ -743,36 +1127,20 @@
               <span style="color:var(--brand-orange); font-size:1.1rem;">${order.total_formatted || ((order.total_cents||0)/100).toFixed(2).replace('.', ',') + ' €'}</span>
             </div>
 
-            <div>
-              <a href="${trackingHref}" target="_blank" class="tracking-link-btn">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                <span>Ver pantalla de seguimiento del cliente</span>
-              </a>
-            </div>
+            ${incidentsHtml}
 
-            <div class="order-actions-bar">
-              <button onclick="setOrderStatus('${order.id}', 'recibido')" class="btn-status ${estado === 'recibido' ? 'active-recibido' : ''}">
-                <span>Recibido</span>
-              </button>
-              <button onclick="setOrderStatus('${order.id}', 'cocina')" class="btn-status ${estado === 'cocina' ? 'active-cocina' : ''}">
-                <span>En Cocina</span>
-              </button>
-              <button onclick="setOrderStatus('${order.id}', 'listo')" class="btn-status ${estado === 'listo' ? 'active-listo' : ''}">
-                <span>Listo</span>
-              </button>
-              <button onclick="setOrderStatus('${order.id}', 'entregado')" class="btn-status ${estado === 'entregado' ? 'active-entregado' : ''}" style="grid-column: span 2;">
-                <span>Entregado</span>
-              </button>
-              <button onclick="setOrderStatus('${order.id}', 'cancelado')" class="btn-status btn-cancel" style="grid-column: span 1;">
-                <span>Cancelar</span>
-              </button>
-            </div>
+            ${actionsHtml}
           </div>
         `;
       }).join('');
     }
 
     async function setOrderStatus(orderId, nuevoEstado) {
+      const existingOrd = ordersList.find(o => o.id === orderId);
+      if (existingOrd && existingOrd.estado === 'entregado' && nuevoEstado !== 'entregado') {
+        showToast('Este pedido ya fue entregado y su estado es definitivo.', 'error');
+        return;
+      }
       const isStatic = Boolean(window.supabaseClient) ||
                        window.location.protocol === 'file:' || 
                        window.location.hostname.endsWith('github.io') || 

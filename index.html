@@ -1839,9 +1839,64 @@
       }
     }
 
-    function openPastOrdersModal() {
-      closeTopNavMenu();
+    let currentIncidentTrackingToken = null;
+
+    function renderPastOrdersList(orders) {
       const body = document.getElementById('past-orders-list-body');
+      if (!body) return;
+
+      if (!orders || !orders.length) {
+        body.innerHTML = `
+          <div style="text-align:center; padding:2rem 1rem; color:var(--text-muted);">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" style="margin-bottom:8px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+            <p style="font-weight:800; color:var(--text-main); margin:0 0 4px 0;">Aún no tienes pedidos anteriores</p>
+            <span style="font-size:0.85rem;">Cuando realices un pedido en este dispositivo aparecerá aquí con su estado.</span>
+          </div>
+        `;
+        return;
+      }
+
+      const statusLabels = {
+        recibido: { text: 'Recibido', bg: '#fef3c7', color: '#b45309' },
+        cocina: { text: 'En cocina', bg: '#dbeafe', color: '#1d4ed8' },
+        listo: { text: 'En envío / Listo', bg: '#d1fae5', color: '#047857' },
+        entregado: { text: 'Entregado', bg: '#ede9fe', color: '#6d28d9' },
+        cancelado: { text: 'Cancelado', bg: '#fee2e2', color: '#b91c1c' }
+      };
+
+      body.innerHTML = orders.map(o => {
+        const estado = o.estado || 'recibido';
+        const isDelivered = estado === 'entregado';
+        const st = statusLabels[estado] || statusLabels.recibido;
+        const itemsSummary = (o.lineas || []).map(l => `${l.cantidad}x ${l.nombre_producto}`).join(', ');
+        const dateStr = o.created_at ? new Date(o.created_at).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
+        const totalStr = o.total_formatted || (((o.total_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €');
+
+        const actionButtonHtml = isDelivered
+          ? `<button type="button" onclick="openIncidentForOrder('${o.numero_comanda || ''}', '${o.tracking_token || ''}', '${o.id || ''}')" class="btn btn-secondary" style="padding:6px 12px; font-size:0.8rem; min-height:34px; border-radius:8px; color:#dc2626; border-color:#fca5a5; background:#fff5f5; font-weight:800;">Abrir una incidencia</button>`
+          : `<a href="seguimiento.html?token=${encodeURIComponent(o.tracking_token || '')}" class="btn btn-secondary" style="padding:6px 12px; font-size:0.8rem; min-height:34px; border-radius:8px;">Ver seguimiento</a>`;
+
+        return `
+          <div style="border:1px solid #e2e8f0; border-radius:12px; padding:12px; background:#f8fafc; display:flex; flex-direction:column; gap:8px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <strong style="font-size:0.98rem; color:var(--text-main);">Comanda #${o.numero_comanda || ''}</strong>
+                <span style="font-size:0.72rem; font-weight:800; padding:2px 8px; border-radius:999px; background:${st.bg}; color:${st.color};">${st.text}</span>
+              </div>
+              <span style="font-size:0.78rem; color:var(--text-muted);">${dateStr}</span>
+            </div>
+            <div style="font-size:0.85rem; color:var(--text-muted);">${itemsSummary || 'Pedido en La Fogoneta'}</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; padding-top:6px; border-top:1px solid #e2e8f0;">
+              <strong style="color:var(--brand-orange); font-size:0.95rem;">${totalStr}</strong>
+              ${actionButtonHtml}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function openPastOrdersModal() {
+      closeTopNavMenu();
       let orders = [];
       try {
         const raw = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
@@ -1850,37 +1905,33 @@
         }
       } catch (_) {}
 
-      if (!orders.length) {
-        body.innerHTML = `
-          <div style="text-align:center; padding:2rem 1rem; color:var(--text-muted);">
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" style="margin-bottom:8px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-            <p style="font-weight:800; color:var(--text-main); margin:0 0 4px 0;">Aún no tienes pedidos anteriores</p>
-            <span style="font-size:0.85rem;">Cuando realices un pedido en este dispositivo aparecerá aquí con su enlace de seguimiento.</span>
-          </div>
-        `;
-      } else {
-        body.innerHTML = orders.map(o => {
-          const itemsSummary = (o.lineas || []).map(l => `${l.cantidad}x ${l.nombre_producto}`).join(', ');
-          const dateStr = o.created_at ? new Date(o.created_at).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
-          const totalStr = o.total_formatted || (((o.total_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €');
-          return `
-            <div style="border:1px solid #e2e8f0; border-radius:12px; padding:12px; background:#f8fafc; display:flex; flex-direction:column; gap:8px;">
-              <div style="display:flex; justify-content:space-between; align-items:center;">
-                <strong style="font-size:0.98rem; color:var(--text-main);">Comanda #${o.numero_comanda || ''}</strong>
-                <span style="font-size:0.78rem; color:var(--text-muted);">${dateStr}</span>
-              </div>
-              <div style="font-size:0.85rem; color:var(--text-muted);">${itemsSummary || 'Pedido en La Fogoneta'}</div>
-              <div style="display:flex; justify-content:space-between; align-items:center; padding-top:6px; border-top:1px solid #e2e8f0;">
-                <strong style="color:var(--brand-orange); font-size:0.95rem;">${totalStr}</strong>
-                <a href="seguimiento.html?token=${encodeURIComponent(o.tracking_token || '')}" class="btn btn-secondary" style="padding:6px 12px; font-size:0.8rem; min-height:34px; border-radius:8px;">Ver seguimiento</a>
-              </div>
-            </div>
-          `;
-        }).join('');
-      }
-
+      renderPastOrdersList(orders);
       document.body.classList.add('modal-open');
       document.getElementById('past-orders-modal').classList.add('open');
+
+      // Sincronizar estado real desde Supabase para actualizar si ya fue entregado
+      if (window.supabaseClient && orders.length > 0) {
+        let changed = false;
+        await Promise.all(orders.map(async (o) => {
+          if (!o.tracking_token) return;
+          try {
+            const { data: rpcOrder, error: rpcErr } = await window.supabaseClient.rpc('obtener_pedido_por_token', {
+              p_token: o.tracking_token
+            });
+            if (!rpcErr && rpcOrder && rpcOrder.ok && rpcOrder.estado && rpcOrder.estado !== o.estado) {
+              o.estado = rpcOrder.estado;
+              changed = true;
+            }
+          } catch (_) {}
+        }));
+
+        if (changed) {
+          try {
+            localStorage.setItem('fogon_orders', JSON.stringify(orders));
+          } catch (_) {}
+          renderPastOrdersList(orders);
+        }
+      }
     }
 
     function closePastOrdersModal() {
@@ -1888,13 +1939,26 @@
       document.getElementById('past-orders-modal').classList.remove('open');
     }
 
+    function openIncidentForOrder(orderNum, trackingToken) {
+      closePastOrdersModal();
+      currentIncidentTrackingToken = trackingToken || null;
+      const inp = document.getElementById('inc-order-num');
+      if (inp && orderNum) {
+        inp.value = '#' + String(orderNum).replace('#', '');
+      }
+      document.body.classList.add('modal-open');
+      document.getElementById('incidents-modal').classList.add('open');
+    }
+
     function openIncidentsModal() {
       closeTopNavMenu();
+      currentIncidentTrackingToken = null;
       try {
         const raw = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
         const inp = document.getElementById('inc-order-num');
-        if (inp && !inp.value && Array.isArray(raw) && raw.length > 0 && raw[0].numero_comanda) {
+        if (inp && Array.isArray(raw) && raw.length > 0 && raw[0].numero_comanda) {
           inp.value = '#' + raw[0].numero_comanda;
+          currentIncidentTrackingToken = raw[0].tracking_token || null;
         }
       } catch (_) {}
       document.body.classList.add('modal-open');
@@ -1917,24 +1981,45 @@
       btn.disabled = true;
       btn.textContent = 'Enviando incidencia...';
 
+      const cleanNum = orderRef.replace('#', '').trim();
+      let matchedOrder = null;
       try {
         const raw = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
-        const cleanNum = orderRef.replace('#', '').trim();
-        const matched = Array.isArray(raw) ? raw.find(o => String(o.numero_comanda) === cleanNum) : null;
-        if (matched && matched.tracking_token && window.supabaseClient) {
-          await window.supabaseClient.rpc('enviar_mensaje_cliente', {
-            p_token: matched.tracking_token,
-            p_texto: `[INCIDENCIA - ${motivo}] ${desc}`
-          });
+        if (Array.isArray(raw)) {
+          matchedOrder = raw.find(o => String(o.numero_comanda) === cleanNum) || raw[0] || null;
         }
       } catch (_) {}
+
+      const tokenToUse = currentIncidentTrackingToken || (matchedOrder && matchedOrder.tracking_token) || null;
+
+      try {
+        const localIncs = JSON.parse(localStorage.getItem('fogon_incidents') || '[]');
+        localIncs.unshift({
+          id: 'inc_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+          pedido_id: matchedOrder ? matchedOrder.id : null,
+          numero_comanda: cleanNum,
+          motivo,
+          texto: desc,
+          created_at: new Date().toISOString()
+        });
+        localStorage.setItem('fogon_incidents', JSON.stringify(localIncs.slice(0, 100)));
+      } catch (_) {}
+
+      if (tokenToUse && window.supabaseClient) {
+        try {
+          await window.supabaseClient.rpc('enviar_mensaje_cliente', {
+            p_token: tokenToUse,
+            p_texto: `[INCIDENCIA - ${motivo}] ${desc}`
+          });
+        } catch (_) {}
+      }
 
       btn.disabled = false;
       btn.textContent = 'Enviar incidencia al restaurante';
       document.getElementById('inc-desc').value = '';
       closeIncidentsModal();
       if (typeof showToast === 'function') {
-        showToast('Incidencia registrada. El restaurante se pondrá en contacto contigo.', 'success');
+        showToast('Incidencia enviada. El restaurante la tiene en su panel de incidencias pendientes.', 'success');
       }
     }
   </script>

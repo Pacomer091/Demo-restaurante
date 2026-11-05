@@ -483,7 +483,7 @@
     </div>
 
     <!-- Chat directo con el restaurante / cocina -->
-    <div class="details-box" style="margin-top: 1.5rem;">
+    <div class="details-box" id="live-chat-box" style="margin-top: 1.5rem;">
       <h2 class="details-heading">
         <span style="display:flex; align-items:center; gap:8px;">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
@@ -505,6 +505,38 @@
           <span>Enviar</span>
         </button>
       </form>
+    </div>
+
+    <!-- Bloque exclusivo cuando el pedido ya está ENTREGADO: Abrir una incidencia -->
+    <div class="details-box" id="delivered-incident-box" style="display:none; margin-top: 1.5rem; border: 1.5px solid #fecaca; background: #fff5f5;">
+      <h2 class="details-heading" style="border-bottom-color: #fecaca;">
+        <span style="display:flex; align-items:center; gap:8px; color:#b91c1c;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+          ¿Algún problema con tu pedido entregado?
+        </span>
+      </h2>
+      <p style="font-size:0.86rem; color:#7f1d1d; margin:0 0 12px 0;">
+        Tu pedido figura como entregado y el seguimiento en vivo ha finalizado. Si has tenido cualquier problema con tu comanda, puedes abrir una incidencia aquí mismo:
+      </p>
+      <button type="button" id="btn-toggle-incident-form" onclick="document.getElementById('tracking-incident-form').style.display='flex'; this.style.display='none';" class="btn btn-primary" style="background:#dc2626; border-color:#dc2626; width:100%; justify-content:center; font-weight:800;">
+        Abrir una incidencia
+      </button>
+      <form id="tracking-incident-form" onsubmit="handleTrackingIncidentSubmit(event)" style="display:none; flex-direction:column; gap:10px; margin-top:8px;">
+        <select id="trk-inc-motivo" style="padding:10px 12px; border-radius:10px; border:1.5px solid #fca5a5; font-family:inherit; font-size:0.9rem; background:#ffffff;" required>
+          <option value="Producto incompleto o erróneo">Producto incompleto o erróneo</option>
+          <option value="Comida fría o en mal estado">Comida fría o en mal estado</option>
+          <option value="Retraso en la entrega">Retraso en la entrega</option>
+          <option value="Problema con el cobro">Problema con el cobro</option>
+          <option value="Otro motivo">Otro motivo</option>
+        </select>
+        <textarea id="trk-inc-texto" rows="3" placeholder="Explica brevemente qué ha ocurrido..." style="padding:10px 12px; border-radius:10px; border:1.5px solid #fca5a5; font-family:inherit; font-size:0.9rem; background:#ffffff; resize:vertical;" required></textarea>
+        <button type="submit" id="btn-send-trk-inc" class="btn btn-primary" style="background:#dc2626; border-color:#dc2626; justify-content:center; font-weight:800;">
+          Enviar incidencia al restaurante
+        </button>
+      </form>
+      <div id="trk-inc-success" style="display:none; padding:10px; border-radius:8px; background:#dcfce7; color:#166534; font-weight:700; font-size:0.85rem; text-align:center;">
+        ✓ Tu incidencia ha sido enviada al restaurante y aparece en su panel de incidencias pendientes.
+      </div>
     </div>
 
     <div class="tracking-footer-actions">
@@ -607,13 +639,44 @@
         subText.textContent = isDelivery ? 'El repartidor está en ruta hacia tu dirección.' : 'Ya puedes pasar por el mostrador a retirarlo caliente.';
         iconWrap.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>';
       } else if (estado === 'entregado') {
-        mainText.textContent = '¡Comanda entregada con éxito!';
-        subText.textContent = '¡Que aproveche! Gracias por confiar directamente en nosotros.';
+        mainText.textContent = '¡Comanda entregada!';
+        subText.textContent = 'El seguimiento en vivo ha finalizado. Si tienes algún problema puedes abrir una incidencia abajo.';
         iconWrap.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>';
       } else if (estado === 'cancelado') {
         mainText.textContent = 'Comanda cancelada';
         subText.textContent = 'Ponte en contacto con el restaurante para más información.';
       }
+
+      // Si el pedido ya está entregado, desactivar seguimiento/chat en vivo y mostrar el bloque para abrir incidencia
+      const progressWrapper = document.querySelector('.progress-track-wrapper');
+      const liveChatBox = document.getElementById('live-chat-box');
+      const deliveredIncBox = document.getElementById('delivered-incident-box');
+      if (estado === 'entregado') {
+        if (progressWrapper) progressWrapper.style.display = 'none';
+        if (liveChatBox) liveChatBox.style.display = 'none';
+        if (deliveredIncBox) deliveredIncBox.style.display = 'block';
+      } else {
+        if (progressWrapper) progressWrapper.style.display = 'block';
+        if (liveChatBox) liveChatBox.style.display = 'block';
+        if (deliveredIncBox) deliveredIncBox.style.display = 'none';
+      }
+
+      // Sincronizar estado en fogon_orders local
+      try {
+        const local = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
+        let updated = false;
+        local.forEach(lo => {
+          if ((order.id && lo.id === order.id) || (ACTIVE_TOKEN && lo.tracking_token === ACTIVE_TOKEN)) {
+            if (lo.estado !== estado) {
+              lo.estado = estado;
+              updated = true;
+            }
+          }
+        });
+        if (updated) localStorage.setItem('fogon_orders', JSON.stringify(local));
+      } catch (_) {}
+
+      window.CURRENT_TRACKED_ORDER = order;
 
       const itemsContainer = document.getElementById('items-list-container');
       if (itemsContainer && order.lineas) {
@@ -630,6 +693,43 @@
           `;
         }).join('');
       }
+    }
+
+    async function handleTrackingIncidentSubmit(e) {
+      e.preventDefault();
+      const motivo = document.getElementById('trk-inc-motivo').value;
+      const texto = document.getElementById('trk-inc-texto').value.trim();
+      if (!texto) return;
+
+      const btn = document.getElementById('btn-send-trk-inc');
+      btn.disabled = true;
+      btn.textContent = 'Enviando incidencia...';
+
+      const ord = window.CURRENT_TRACKED_ORDER || {};
+      try {
+        const localIncs = JSON.parse(localStorage.getItem('fogon_incidents') || '[]');
+        localIncs.unshift({
+          id: 'inc_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+          pedido_id: ord.id || null,
+          numero_comanda: ord.numero_comanda || null,
+          motivo,
+          texto,
+          created_at: new Date().toISOString()
+        });
+        localStorage.setItem('fogon_incidents', JSON.stringify(localIncs.slice(0, 100)));
+      } catch (_) {}
+
+      if (window.supabaseClient && ACTIVE_TOKEN) {
+        try {
+          await window.supabaseClient.rpc('enviar_mensaje_cliente', {
+            p_token: ACTIVE_TOKEN,
+            p_texto: `[INCIDENCIA - ${motivo}] ${texto}`
+          });
+        } catch (_) {}
+      }
+
+      document.getElementById('tracking-incident-form').style.display = 'none';
+      document.getElementById('trk-inc-success').style.display = 'block';
     }
 
     async function fetchTrackingStatus() {
