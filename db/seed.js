@@ -171,7 +171,7 @@ function runSeed(reset = false) {
     'Alitas Glaseadas al Bourbon & Miel (6u)',
     'Alitas de pollo carnosas a la brasa de encina con glaseado casero de salsa barbacoa al bourbon y miel de romero, con toque de sésamo blanco tostado.',
     720, // 7,20 €
-    'https://images.unsplash.com/photo-1527477378696-7a8be0d80d21?w=600&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1567620832903-9fc6debc209f?w=600&auto=format&fit=crop&q=80',
     1,
     0,
     JSON.stringify(['sesamo', 'sulfitos'])
