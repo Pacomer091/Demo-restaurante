@@ -781,32 +781,74 @@
       }
     }
 
+    function showOrderDeletedScreen() {
+      const container = document.querySelector('.tracking-container');
+      if (!container) return;
+      container.innerHTML = `
+        <div class="tracking-card" style="text-align: center; padding: 3.5rem 1.5rem; margin-top: 1rem;">
+          <div style="width: 68px; height: 68px; margin: 0 auto 1.25rem; border-radius: 50%; background: #fee2e2; display: flex; align-items: center; justify-content: center; color: #dc2626;">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              <line x1="10" y1="11" x2="10" y2="17"></line>
+              <line x1="14" y1="11" x2="14" y2="17"></line>
+            </svg>
+          </div>
+          <h2 style="font-size: 1.45rem; font-weight: 800; color: #0f172a; margin-bottom: 0.5rem;">Comanda eliminada</h2>
+          <p style="color: #64748b; font-size: 0.95rem; max-width: 440px; margin: 0 auto 1.75rem; line-height: 1.5;">
+            El restaurante ha eliminado esta comanda o el enlace de seguimiento ya no está disponible.
+          </p>
+          <a href="index.html" class="btn" style="display: inline-flex; align-items: center; gap: 8px; padding: 11px 24px; background: #f97316; color: #ffffff; border-radius: 12px; font-weight: 800; font-size: 0.92rem; text-decoration: none; box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3);">
+            ← Volver al inicio / Carta
+          </a>
+        </div>
+      `;
+    }
+
     async function fetchTrackingStatus() {
       // 1. Supabase vía RPC segura con token (compatible con RLS estricto)
-      if (window.supabaseClient && ACTIVE_TOKEN) {
+      if (window.supabaseClient && ACTIVE_TOKEN && !ACTIVE_TOKEN.startsWith('trk_inc_')) {
         try {
           const { data, error } = await window.supabaseClient.rpc('obtener_pedido_por_token', {
             p_token: ACTIVE_TOKEN
           });
 
-          if (!error && data && data.ok) {
-            const p = data.pedido || data;
-            updateTrackingUI({
-              ...p,
-              subtotal_formatted: ((p.subtotal_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €',
-              gastos_envio_formatted: ((p.gastos_envio_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €',
-              total_formatted: ((p.total_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €',
-              lineas: (p.lineas || []).map(l => ({
-                ...l,
-                extras: Array.isArray(l.extras) ? l.extras : (typeof l.extras_json === 'string' ? JSON.parse(l.extras_json) : (l.extras_json || []))
-              }))
-            });
-            return;
+          if (!error && data) {
+            if (data.ok) {
+              const p = data.pedido || data;
+              updateTrackingUI({
+                ...p,
+                subtotal_formatted: ((p.subtotal_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €',
+                gastos_envio_formatted: ((p.gastos_envio_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €',
+                total_formatted: ((p.total_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €',
+                lineas: (p.lineas || []).map(l => ({
+                  ...l,
+                  extras: Array.isArray(l.extras) ? l.extras : (typeof l.extras_json === 'string' ? JSON.parse(l.extras_json) : (l.extras_json || []))
+                }))
+              });
+              return;
+            } else if (data.ok === false) {
+              // EL PEDIDO FUE BORRADO DE LA BD POR EL RESTAURANTE
+              // 1. Eliminar inmediatamente del móvil del cliente
+              try {
+                let local = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
+                local = local.filter(o => o.tracking_token !== ACTIVE_TOKEN && o.id !== ACTIVE_TOKEN);
+                if (local.length === 0) {
+                  localStorage.removeItem('fogon_orders');
+                } else {
+                  localStorage.setItem('fogon_orders', JSON.stringify(local));
+                }
+              } catch (_) {}
+
+              // 2. Mostrar pantalla de comanda eliminada
+              showOrderDeletedScreen();
+              return;
+            }
           }
         } catch (_) {}
       }
 
-      // 2. LocalStorage fallback
+      // 2. LocalStorage fallback (para pedidos de reposición o modo offline)
       try {
         const local = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
         const found = local.find(o => o.tracking_token === ACTIVE_TOKEN || o.id === ACTIVE_TOKEN);
@@ -815,6 +857,9 @@
           return;
         }
       } catch (_) {}
+
+      // Si no se encuentra ni en BD ni en localStorage
+      showOrderDeletedScreen();
     }
 
     async function loadChatMessages() {
@@ -873,6 +918,18 @@
               }
             } catch (_) {}
           }
+          return;
+        }
+
+        if (sender === 'restaurante' && raw.startsWith('[INC_DELETED:')) {
+          const delParts = raw.replace('[INC_DELETED:', '').replace(']', '').split(':');
+          const delId = delParts[0].trim();
+          try {
+            let local = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
+            local = local.filter(o => o.id !== delId);
+            localStorage.setItem('fogon_orders', JSON.stringify(local));
+            activeResendOrder = null;
+          } catch (_) {}
           return;
         }
 

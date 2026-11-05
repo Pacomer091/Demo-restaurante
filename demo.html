@@ -1979,7 +1979,16 @@
         cancelado: { text: 'Cancelado', bg: '#fee2e2', color: '#b91c1c' }
       };
 
-      body.innerHTML = orders.map(o => {
+      const headerActionsHtml = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid #e2e8f0;">
+          <span style="font-size:0.8rem; color:var(--text-muted); font-weight:700;">${orders.length} ${orders.length === 1 ? 'comanda registrada' : 'comandas registradas'}</span>
+          <button type="button" onclick="clearAllClientOrders()" style="background:none; border:none; color:#ef4444; font-size:0.78rem; font-weight:800; cursor:pointer; padding:4px 8px; border-radius:6px; transition:background 0.15s;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='none'" title="Eliminar todo el historial guardado en este móvil">
+            Vaciar historial
+          </button>
+        </div>
+      `;
+
+      body.innerHTML = headerActionsHtml + orders.map(o => {
         const estado = o.estado || 'recibido';
         const isDelivered = estado === 'entregado';
         const st = statusLabels[estado] || statusLabels.recibido;
@@ -1998,7 +2007,12 @@
                 <strong style="font-size:0.98rem; color:var(--text-main);">Comanda #${o.numero_comanda || ''}</strong>
                 <span style="font-size:0.72rem; font-weight:800; padding:2px 8px; border-radius:999px; background:${st.bg}; color:${st.color};">${st.text}</span>
               </div>
-              <span style="font-size:0.78rem; color:var(--text-muted);">${dateStr}</span>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:0.78rem; color:var(--text-muted);">${dateStr}</span>
+                <button type="button" onclick="deleteClientOrder('${o.id}')" title="Eliminar este pedido de mi móvil" style="background:none; border:none; color:#94a3b8; cursor:pointer; padding:3px 5px; border-radius:6px; display:inline-flex; align-items:center; transition:all 0.15s;" onmouseover="this.style.color='#ef4444'; this.style.background='#fee2e2';" onmouseout="this.style.color='#94a3b8'; this.style.background='none';">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
+              </div>
             </div>
             <div style="font-size:0.85rem; color:var(--text-muted);">${itemsSummary || 'Pedido en La Fogoneta'}</div>
             <div style="display:flex; justify-content:space-between; align-items:center; padding-top:6px; border-top:1px solid #e2e8f0;">
@@ -2008,6 +2022,31 @@
           </div>
         `;
       }).join('');
+    }
+
+    function deleteClientOrder(orderId) {
+      if (!confirm('¿Deseas eliminar este pedido del historial de tu móvil?')) return;
+      try {
+        let local = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
+        local = local.filter(o => o && o.id !== orderId);
+        if (local.length === 0) {
+          localStorage.removeItem('fogon_orders');
+        } else {
+          localStorage.setItem('fogon_orders', JSON.stringify(local));
+        }
+        renderPastOrdersList(local);
+        checkActiveOrderButton();
+      } catch (_) {}
+    }
+
+    function clearAllClientOrders() {
+      if (!confirm('¿Deseas vaciar todo el historial de pedidos de este dispositivo?')) return;
+      try {
+        localStorage.removeItem('fogon_orders');
+        renderPastOrdersList([]);
+        checkActiveOrderButton();
+      } catch (_) {}
+    }
     }
 
     function checkActiveOrderButton() {
@@ -2097,15 +2136,23 @@
               const msgs = Array.isArray(chatData) ? chatData : (chatData && Array.isArray(chatData.mensajes) ? chatData.mensajes : []);
               for (const m of msgs) {
                 const text = (m && (m.texto || m.mensaje)) || '';
-                if (text.startsWith('[INCIDENCIA_RESUELTA:') && text.includes(':reenvio:')) {
-                  const parts = text.replace('[INCIDENCIA_RESUELTA:', '').replace(']', '').split(':');
-                  if (parts[2]) {
-                    try {
-                      const extra = JSON.parse(decodeURIComponent(parts.slice(2).join(':')));
-                      if (extra && extra.id && !validOrders.some(v => v.id === extra.id)) {
-                        validOrders.unshift(extra);
-                      }
-                    } catch (_) {}
+                if (text.startsWith('[INC_DELETED:')) {
+                  const delParts = text.replace('[INC_DELETED:', '').replace(']', '').split(':');
+                  const delId = delParts[0].trim();
+                  const dIdx = validOrders.findIndex(v => v.id === delId);
+                  if (dIdx !== -1) validOrders.splice(dIdx, 1);
+                } else if (text.startsWith('[INCIDENCIA_RESUELTA:') && text.includes(':reenvio:')) {
+                  const hasDel = msgs.some(mOther => (mOther.texto || mOther.mensaje || '').includes('[INC_DELETED:'));
+                  if (!hasDel) {
+                    const parts = text.replace('[INCIDENCIA_RESUELTA:', '').replace(']', '').split(':');
+                    if (parts[2]) {
+                      try {
+                        const extra = JSON.parse(decodeURIComponent(parts.slice(2).join(':')));
+                        if (extra && extra.id && !validOrders.some(v => v.id === extra.id)) {
+                          validOrders.unshift(extra);
+                        }
+                      } catch (_) {}
+                    }
                   }
                 } else if (text.startsWith('[INC_STATUS:')) {
                   const stParts = text.replace('[INC_STATUS:', '').replace(']', '').split(':');
@@ -2116,6 +2163,18 @@
                 }
               }
             } catch (_) {}
+          }
+        }
+      }
+
+      // Si el pedido original de una comanda de reposición ya no existe (fue borrado), descartar también la reposición
+      for (let i = validOrders.length - 1; i >= 0; i--) {
+        const item = validOrders[i];
+        if (item && item.id && item.id.startsWith('ped_inc_')) {
+          const parentNum = String(item.numero_comanda || '').replace('incidencia-', '').trim();
+          const parentExists = validOrders.some(v => String(v.numero_comanda) === parentNum || (item.parentOrderId && v.id === item.parentOrderId));
+          if (!parentExists) {
+            validOrders.splice(i, 1);
           }
         }
       }
@@ -2301,6 +2360,19 @@
                 }
               } catch (_) {}
             }
+            return;
+          }
+
+          if (sender === 'restaurante' && raw.startsWith('[INC_DELETED:')) {
+            const delParts = raw.replace('[INC_DELETED:', '').replace(']', '').split(':');
+            const delId = delParts[0].trim();
+            try {
+              let local = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
+              local = local.filter(o => o.id !== delId);
+              localStorage.setItem('fogon_orders', JSON.stringify(local));
+              activeModalResendOrder = null;
+              checkActiveOrderButton();
+            } catch (_) {}
             return;
           }
 

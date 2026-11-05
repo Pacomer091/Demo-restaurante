@@ -1328,7 +1328,6 @@
 
       const newOrder = {
         id: newOrderId,
-        parentOrderId: originalOrder ? originalOrder.id : null,
         restaurante_id: REST_ID,
         numero_comanda: newComandaNum,
         tracking_token: newTrackingToken,
@@ -1702,23 +1701,11 @@
 
         if (window.supabaseClient) {
           try {
-            if (orderId.startsWith('ped_inc_')) {
-              const targetIncOrder = ordersList.find(o => o.id === orderId);
-              if (targetIncOrder && targetIncOrder.parentOrderId) {
-                await window.supabaseClient.from('mensajes_chat').insert({
-                  pedido_id: targetIncOrder.parentOrderId,
-                  restaurante_id: REST_ID,
-                  remitente: 'restaurante',
-                  texto: `[INC_STATUS:${orderId}:${nuevoEstado}]`
-                });
-              }
-            } else {
-              const { error } = await window.supabaseClient
-                .from('pedidos')
-                .update({ estado: nuevoEstado })
-                .eq('id', orderId);
-              if (error) console.warn('Error actualizando estado en Supabase:', error);
-            }
+            const { error } = await window.supabaseClient
+              .from('pedidos')
+              .update({ estado: nuevoEstado })
+              .eq('id', orderId);
+            if (error) console.warn('Error actualizando estado en Supabase:', error);
           } catch (e) {
             console.warn('Excepción actualizando estado:', e);
           } finally {
@@ -1758,19 +1745,49 @@
 
       if (isStatic || !window.location.port) {
         markOrderDeleted(orderId);
+        const targetOrder = ordersList.find(o => o.id === orderId);
         ordersList = ordersList.filter(o => o.id !== orderId);
         renderOrders();
 
         try {
           let local = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
           local = local.filter(o => o.id !== orderId);
-          localStorage.setItem('fogon_orders', JSON.stringify(local));
+          if (local.length === 0) {
+            localStorage.removeItem('fogon_orders');
+          } else {
+            localStorage.setItem('fogon_orders', JSON.stringify(local));
+          }
         } catch (_) {}
 
         if (window.supabaseClient) {
           try {
-            await window.supabaseClient.from('lineas_de_pedido').delete().eq('pedido_id', orderId);
-            await window.supabaseClient.from('pedidos').delete().eq('id', orderId);
+            if (orderId.startsWith('ped_inc_')) {
+              const parentId = (targetOrder && targetOrder.parentOrderId) || null;
+              if (parentId) {
+                await window.supabaseClient
+                  .from('mensajes_chat')
+                  .delete()
+                  .eq('pedido_id', parentId)
+                  .ilike('texto', '%[INCIDENCIA_RESUELTA%');
+                await window.supabaseClient.from('mensajes_chat').insert({
+                  pedido_id: parentId,
+                  restaurante_id: REST_ID,
+                  remitente: 'restaurante',
+                  texto: `[INC_DELETED:${orderId}]`
+                });
+              }
+            } else {
+              // 1. Borrar chat del pedido
+              await window.supabaseClient.from('mensajes_chat').delete().eq('pedido_id', orderId);
+              // 2. Borrar líneas del pedido
+              await window.supabaseClient.from('lineas_de_pedido').delete().eq('pedido_id', orderId);
+              // 3. Borrar el pedido de la base de datos
+              const { error: delErr } = await window.supabaseClient.from('pedidos').delete().eq('id', orderId);
+              if (delErr) {
+                console.warn('Error borrando en pedidos, marcando como cancelado:', delErr);
+                await window.supabaseClient.from('pedidos').update({ estado: 'cancelado' }).eq('id', orderId);
+              }
+            }
           } catch (e) {
             console.warn('Error borrando comanda en Supabase:', e);
           }
@@ -1825,6 +1842,7 @@
         if (window.supabaseClient) {
           try {
             if (completedIds.length > 0) {
+              await window.supabaseClient.from('mensajes_chat').delete().in('pedido_id', completedIds);
               await window.supabaseClient.from('lineas_de_pedido').delete().in('pedido_id', completedIds);
             }
             await window.supabaseClient.from('pedidos').delete().in('estado', ['entregado', 'cancelado']).eq('restaurante_id', REST_ID);
