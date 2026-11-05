@@ -178,6 +178,19 @@ function runSeed(reset = false) {
   );
 
   insertProd.run(
+    'prod_salsa1',
+    'rest_demo',
+    'cat_demo_2',
+    'Tarrina Salsa Secreta Fogonazo',
+    'Nuestra salsa especial ligeramente ahumada con pepinillos picados, mostaza antigua y toque de pimentón de la Vera, ideal para dipear.',
+    150, // 1,50 €
+    'https://images.unsplash.com/photo-1472476443507-c7a5948772fc?w=600&auto=format&fit=crop&q=80',
+    1,
+    0,
+    JSON.stringify(['huevo', 'mostaza'])
+  );
+
+  insertProd.run(
     'prod_pos1',
     'rest_demo',
     'cat_demo_3',
@@ -188,6 +201,19 @@ function runSeed(reset = false) {
     1,
     1,
     JSON.stringify(['gluten', 'lacteos', 'huevo'])
+  );
+
+  insertProd.run(
+    'prod_beb3',
+    'rest_demo',
+    'cat_demo_4',
+    'Coca-Cola Original Bien Fría (33cl)',
+    'Lata de 33cl de Coca-Cola Original servida muy fría, el acompañamiento clásico para tu smash burger.',
+    250, // 2,50 €
+    'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=600&auto=format&fit=crop&q=80',
+    1,
+    0,
+    JSON.stringify([])
   );
 
   insertProd.run(
