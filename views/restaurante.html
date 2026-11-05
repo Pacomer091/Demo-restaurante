@@ -3,19 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>{{RESTAURANTE_NOMBRE}} — Carta y Pedidos Online | Fogonazo</title>
-  <link rel="icon" type="image/png" href="/img/logo.png">
+  <title>La Fogoneta Smash Burgers — Carta y Pedidos Online | Fogonazo</title>
+  <link rel="icon" type="image/png" href="img/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="css/style.css">
   
   <style>
     :root {
-      --brand-orange: {{COLOR_PRIMARIO}};
-      --brand-orange-light: {{COLOR_SECUNDARIO}};
-      --brand-gradient: linear-gradient(135deg, {{COLOR_PRIMARIO}} 0%, {{COLOR_SECUNDARIO}} 100%);
-      --brand-glow: {{COLOR_PRIMARIO}}22;
+      --brand-orange: #ff5500;
+      --brand-orange-light: #ff7a00;
+      --brand-gradient: linear-gradient(135deg, #ff5500 0%, #ff7a00 100%);
+      --brand-glow: #ff550022;
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
@@ -1269,15 +1269,28 @@
       margin-top: 4px;
     }
   </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    window.SUPABASE_CONFIG = {
+      url: 'https://bmikdaufucnrezcbssab.supabase.co',
+      key: 'sb_publishable__Jw9hiEizMUSztT-NG559w_ACP1aMrr'
+    };
+    try {
+      window.supabaseClient = window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.key);
+    } catch (e) {
+      console.warn('Supabase init notice:', e);
+    }
+  </script>
 </head>
 <body>
 
   <!-- 1. BARRA SUPERIOR -->
   <header class="rest-nav-bar">
     <div class="rest-nav-inner">
-      <a href="/" class="brand-wrap">
-        <img src="/img/logo.png" alt="Fogonazo" class="rest-logo-img">
-        <span class="rest-brand-name">{{RESTAURANTE_NOMBRE}}</span>
+      <a href="index.html" class="brand-wrap">
+        <img src="img/logo.png" alt="Fogonazo" class="rest-logo-img">
+        <span class="rest-brand-name">La Fogoneta Smash Burgers</span>
       </a>
       <div class="nav-actions" id="top-nav-menu-container">
         <button type="button" class="btn-nav-menu" id="btn-top-menu" onclick="toggleTopNavMenu(event)" aria-expanded="false" aria-haspopup="true">
@@ -1303,7 +1316,7 @@
 
           <div class="nav-dropdown-divider"></div>
 
-          <a href="/login" class="nav-dropdown-item">
+          <a href="login.html" class="nav-dropdown-item">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
             <span>Acceso profesional</span>
           </a>
@@ -1317,15 +1330,15 @@
     <!-- Banner con foto gastronómica de alta definición -->
     <div class="rest-banner-container">
       <div class="rest-banner-media">
-        <img src="{{BANNER_URL}}" alt="{{RESTAURANTE_NOMBRE}}" class="rest-banner-img" fetchpriority="high">
+        <img src="img/banner-demo.jpg" alt="La Fogoneta Smash Burgers" class="rest-banner-img" fetchpriority="high">
         <div class="rest-banner-overlay"></div>
         <div class="rest-banner-badges">
           <span class="banner-pill banner-pill-badge">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3.5z"></path></svg>
             Smash Burgers a la Brasa
           </span>
-          <a href="https://maps.google.com/?q={{DIRECCION}}" target="_blank" rel="noopener noreferrer" class="banner-pill banner-pill-maps" title="Ver en Google Maps">
-            <img src="/img/google-maps-logo.png" alt="Google Maps" class="maps-pill-logo">
+          <a href="https://maps.google.com/?q=Calle+del+Fuego+24,+28004+Madrid" target="_blank" rel="noopener noreferrer" class="banner-pill banner-pill-maps" title="Ver en Google Maps">
+            <img src="img/google-maps-logo.png" alt="Google Maps" class="maps-pill-logo">
           </a>
         </div>
       </div>
@@ -1337,18 +1350,18 @@
         <!-- Avatar / Logotipo del restaurante -->
         <div class="rest-avatar-wrap">
           <div class="rest-avatar-box">
-            <img src="/img/logo.png" alt="{{RESTAURANTE_NOMBRE}}" class="rest-avatar-img">
+            <img src="img/logo.png" alt="La Fogoneta Smash Burgers" class="rest-avatar-img">
           </div>
         </div>
 
         <div class="rest-profile-details">
           <div class="rest-title-row">
-            <h1 class="rest-title">{{RESTAURANTE_NOMBRE}}</h1>
+            <h1 class="rest-title">La Fogoneta Smash Burgers</h1>
             <span class="verified-badge" title="Restaurante oficial verificado en Fogonazo">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--brand-orange)" stroke="#ffffff" stroke-width="2.2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
             </span>
           </div>
-          <p class="rest-tagline">{{RESTAURANTE_TAGLINE}}</p>
+          <p class="rest-tagline">Smash burgers artesanas a la brasa, patatas trufadas y batidos</p>
 
           <div class="rest-meta-row">
             <span class="meta-badge status-open">
@@ -1361,11 +1374,11 @@
             </span>
             <span class="meta-badge">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-              Envío: {{COSTE_ENVIO_FORMATTED}}
+              Envío: 2,50 €
             </span>
             <span class="meta-badge">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-              Mín. {{PEDIDO_MINIMO_FORMATTED}}
+              Mín. 14,00 €
             </span>
           </div>
         </div>
@@ -1419,8 +1432,8 @@
       <!-- Barra de progreso de pedido mínimo (solo si es domicilio) -->
       <div class="min-order-alert" id="min-order-box">
         <div style="display:flex; justify-content:space-between;">
-          <span id="min-order-text">Pedido mínimo: {{PEDIDO_MINIMO_FORMATTED}}</span>
-          <strong id="min-order-diff">Faltan {{PEDIDO_MINIMO_FORMATTED}}</strong>
+          <span id="min-order-text">Pedido mínimo: 14,00 €</span>
+          <strong id="min-order-diff">Faltan 14,00 €</strong>
         </div>
         <div class="min-order-bar-track">
           <div class="min-order-bar-fill" id="min-order-fill" style="width: 0%;"></div>
@@ -1442,7 +1455,7 @@
         </div>
         <div class="cart-total-row" id="desktop-delivery-row">
           <span>Gastos de entrega</span>
-          <span id="desktop-shipping">{{COSTE_ENVIO_FORMATTED}}</span>
+          <span id="desktop-shipping">2,50 €</span>
         </div>
         <div class="cart-total-row grand-total">
           <span>Total</span>
@@ -1536,8 +1549,8 @@
         <!-- Alerta de Pedido Mínimo en Modal -->
         <div class="min-order-alert" id="modal-min-order-box">
           <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-            <span>Pedido mínimo: {{PEDIDO_MINIMO_FORMATTED}}</span>
-            <strong id="modal-min-diff">Faltan {{PEDIDO_MINIMO_FORMATTED}}</strong>
+            <span>Pedido mínimo: 14,00 €</span>
+            <strong id="modal-min-diff">Faltan 14,00 €</strong>
           </div>
           <div class="min-order-bar-track">
             <div class="min-order-bar-fill" id="modal-min-fill" style="width: 0%;"></div>
@@ -1671,39 +1684,58 @@
     </div>
   </div>
 
-  <!-- 11. MODAL: GESTIÓN DE INCIDENCIAS -->
+  <!-- 11. MODAL: GESTIÓN DE INCIDENCIAS (CHAT EN VIVO) -->
   <div class="modal-overlay" id="incidents-modal" onclick="if(event.target.id==='incidents-modal') closeIncidentsModal()">
     <div class="modal-card">
       <div class="sheet-drag-handle"></div>
       <div class="modal-header">
-        <h3 class="modal-title">Gestión de incidencias</h3>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <h3 class="modal-title" id="modal-inc-header-title">Gestión de incidencias</h3>
+          <span id="modal-inc-status-pill" style="display:none; font-size:0.74rem; font-weight:800; padding:3px 9px; border-radius:999px;"></span>
+        </div>
         <button onclick="closeIncidentsModal()" class="btn-close-modal" aria-label="Cerrar">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
       </div>
       <div class="modal-body">
-        <p style="font-size:0.88rem; color:var(--text-muted); margin:0;">¿Has tenido algún problema con tu pedido? Envíanos los detalles y el restaurante lo atenderá de inmediato.</p>
-        <form onsubmit="handleIncidentSubmit(event)" id="incident-form">
-          <div class="form-group">
-            <label for="inc-order-num" class="form-label">Nº de comanda o teléfono</label>
-            <input type="text" id="inc-order-num" class="form-input" required placeholder="Ej. #113 o 654 321 000">
+        <!-- Vista 1: Formulario para abrir nueva incidencia -->
+        <div id="modal-inc-create-view">
+          <p style="font-size:0.88rem; color:var(--text-muted); margin:0 0 12px 0;">¿Has tenido algún problema con tu pedido? Abre un chat de incidencia directo con el restaurante:</p>
+          <form onsubmit="handleIncidentSubmit(event)" id="incident-form">
+            <div class="form-group">
+              <label for="inc-order-num" class="form-label">Nº de comanda</label>
+              <input type="text" id="inc-order-num" class="form-input" required placeholder="Ej. #113" oninput="handleIncidentOrderInputChange(this.value)">
+            </div>
+            <div class="form-group">
+              <label for="inc-type" class="form-label">Motivo de la incidencia</label>
+              <select id="inc-type" class="form-input" required>
+                <option value="Producto incompleto o erróneo">Producto incompleto o erróneo</option>
+                <option value="Comida fría o en mal estado">Comida fría o en mal estado</option>
+                <option value="Retraso en la entrega">Retraso en la entrega</option>
+                <option value="Problema con el pago">Problema con el pago</option>
+                <option value="Otro motivo">Otro motivo</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="inc-desc" class="form-label">Mensaje inicial</label>
+              <textarea id="inc-desc" class="form-input" rows="3" required placeholder="Cuéntanos qué ha ocurrido para solucionarlo rápidamente..." style="min-height:84px; resize:vertical;"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" id="btn-submit-incident" style="width:100%; min-height:48px; font-weight:800;">Iniciar chat de incidencia</button>
+          </form>
+        </div>
+
+        <!-- Vista 2: Chat de incidencia en tiempo real -->
+        <div id="modal-inc-chat-view" style="display:none; flex-direction:column; gap:10px;">
+          <div id="modal-inc-motivo-banner" style="font-size:0.82rem; font-weight:800; color:#991b1b; background:#fee2e2; border:1px solid #fecaca; padding:7px 10px; border-radius:8px;"></div>
+          <div id="modal-inc-messages-list" style="max-height:260px; min-height:140px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px;"></div>
+          <form id="modal-inc-reply-form" onsubmit="handleSendModalIncidentReply(event)" style="display:flex; gap:8px;">
+            <input type="text" id="modal-inc-reply-input" class="form-input" placeholder="Escribe un mensaje al restaurante..." style="flex:1; min-height:42px;" required autocomplete="off">
+            <button type="submit" id="btn-send-modal-inc-reply" class="btn btn-primary" style="padding:0 16px; min-height:42px; font-weight:800;">Enviar</button>
+          </form>
+          <div id="modal-inc-closed-banner" style="display:none; padding:10px 12px; border-radius:8px; background:#dcfce7; border:1px solid #bbf7d0; color:#166534; font-weight:800; font-size:0.84rem; text-align:center;">
+            ✓ El restaurante ha cerrado y dado por resuelta esta incidencia.
           </div>
-          <div class="form-group">
-            <label for="inc-type" class="form-label">Motivo de la incidencia</label>
-            <select id="inc-type" class="form-input" required>
-              <option value="Retraso en la entrega">Retraso en la entrega</option>
-              <option value="Producto incompleto o erróneo">Producto incompleto o erróneo</option>
-              <option value="Modificar dirección o nota">Modificar dirección o nota</option>
-              <option value="Problema con el pago">Problema con el pago</option>
-              <option value="Otro motivo">Otro motivo</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="inc-desc" class="form-label">Descripción detallada</label>
-            <textarea id="inc-desc" class="form-input" rows="3" required placeholder="Cuéntanos qué ha ocurrido para solucionarlo rápidamente..." style="min-height:84px; resize:vertical;"></textarea>
-          </div>
-          <button type="submit" class="btn btn-primary" id="btn-submit-incident" style="width:100%; min-height:48px; font-weight:800;">Enviar incidencia al restaurante</button>
-        </form>
+        </div>
       </div>
     </div>
   </div>
@@ -1713,17 +1745,17 @@
   <!-- Inyección de Datos del Servidor -->
   <script>
     const RESTAURANTE = {
-      id: "{{RESTAURANTE_ID}}",
-      slug: "{{RESTAURANTE_SLUG}}",
-      nombre: "{{RESTAURANTE_NOMBRE}}",
-      moneda: "{{MONEDA}}",
-      pedidoMinimoCents: Number("{{PEDIDO_MINIMO_CENTS}}"),
-      costeEnvioCents: Number("{{COSTE_ENVIO_CENTS}}")
+      id: "rest_demo",
+      slug: "demo",
+      nombre: "La Fogoneta Smash Burgers",
+      moneda: "€",
+      pedidoMinimoCents: Number("1400"),
+      costeEnvioCents: Number("250")
     };
-    const MENU_DATA = {{MENU_JSON}};
+    const MENU_DATA = [{"id":"cat_demo_1","nombre":"Smash Burgers a la Brasa","orden":1,"productos":[{"id":"prod_b2","nombre":"Smash Bacon Cheese Clásica","descripcion":"Doble disco de carne smash con costra caramelizada, cuatro tiras de bacon ahumado crujiente, queso cheddar fundido y nuestra salsa burger secreta Fogonazo.","precio_cents":1050,"imagen_url":"https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=600&auto=format&fit=crop&q=80","disponible":true,"destacado":true,"alergenos":["gluten","lacteos","huevo","mostaza"],"grupos_opciones":[{"id":"grp_b2_punto","producto_id":"prod_b2","nombre":"Punto de la Carne","obligatorio":true,"max_seleccion":1,"orden":1,"opciones":[{"id":"opt_b2_p1","nombre":"Al punto con costra crujiente","precio_extra_cents":0,"disponible":true},{"id":"opt_b2_p2","nombre":"Bien pasada","precio_extra_cents":0,"disponible":true}]},{"id":"grp_b2_extras","producto_id":"prod_b2","nombre":"Extras Opcionales","obligatorio":false,"max_seleccion":3,"orden":2,"opciones":[{"id":"opt_b2_e1","nombre":"Doble ración de bacon (+1,20 €)","precio_extra_cents":120,"disponible":true},{"id":"opt_b2_e2","nombre":"Cebolla crujiente frita (+0,80 €)","precio_extra_cents":80,"disponible":true},{"id":"opt_b2_e3","nombre":"Huevo frito a la plancha (+1,20 €)","precio_extra_cents":120,"disponible":true}]}]},{"id":"prod_b1","nombre":"Smash Trufada Doble","descripcion":"Dos patties crujientes de 90g de vaca rubia madurada, doble cheddar inglés, mayonesa trufada casera y cebolla pochada en pan brioche artesano tostado con mantequilla.","precio_cents":1190,"imagen_url":"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&auto=format&fit=crop&q=80","disponible":true,"destacado":true,"alergenos":["gluten","lacteos","huevo"],"grupos_opciones":[{"id":"grp_b1_punto","producto_id":"prod_b1","nombre":"Punto de la Carne","obligatorio":true,"max_seleccion":1,"orden":1,"opciones":[{"id":"opt_b1_p1","nombre":"Al punto con costra crujiente","precio_extra_cents":0,"disponible":true},{"id":"opt_b1_p2","nombre":"Bien hecha y tostada","precio_extra_cents":0,"disponible":true}]},{"id":"grp_b1_extras","producto_id":"prod_b1","nombre":"Añade Extras a tu Burger","obligatorio":false,"max_seleccion":3,"orden":2,"opciones":[{"id":"opt_b1_e1","nombre":"Bacon crujiente caramelizado (+1,20 €)","precio_extra_cents":120,"disponible":true},{"id":"opt_b1_e2","nombre":"Queso cheddar ahumado extra (+1,00 €)","precio_extra_cents":100,"disponible":true},{"id":"opt_b1_e3","nombre":"Huevo campero frito a la plancha (+1,20 €)","precio_extra_cents":120,"disponible":true},{"id":"opt_b1_e4","nombre":"Pepinillos encurtidos artesanos (+0,50 €)","precio_extra_cents":50,"disponible":true}]},{"id":"grp_b1_salsa","producto_id":"prod_b1","nombre":"Salsa para Acompañar","obligatorio":false,"max_seleccion":2,"orden":3,"opciones":[{"id":"opt_b1_s1","nombre":"Salsa Mayo Trufada Extra (+1,00 €)","precio_extra_cents":100,"disponible":true},{"id":"opt_b1_s2","nombre":"Salsa Fogonazo Secreta (+0,80 €)","precio_extra_cents":80,"disponible":true},{"id":"opt_b1_s3","nombre":"Barbacoa al Bourbon (+0,80 €)","precio_extra_cents":80,"disponible":true}]}]},{"id":"prod_b3","nombre":"Smash Pollo Sureño Crujiente","descripcion":"Contramuslo de pollo de corral marinado 24 horas en suero de leche, frito extracrujiente, salsa mayo-chipotle suave, ensalada de col fresca y pepinillos agridulces.","precio_cents":990,"imagen_url":"https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?w=600&auto=format&fit=crop&q=80","disponible":true,"destacado":false,"alergenos":["gluten","lacteos","huevo"],"grupos_opciones":[]}]},{"id":"cat_demo_2","nombre":"Entrantes & Fries","orden":2,"productos":[{"id":"prod_e1","nombre":"Patatas Rústicas Trufadas con Parmesano","descripcion":"Patatas naturales de corte grueso doble fritura con aceite de trufa blanca de temporada, lluvia abundante de queso Parmigiano Reggiano 24 meses y orégano silvestre.","precio_cents":550,"imagen_url":"https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=600&auto=format&fit=crop&q=80","disponible":true,"destacado":true,"alergenos":["lacteos"],"grupos_opciones":[]},{"id":"prod_e2","nombre":"Alitas Glaseadas al Bourbon & Miel (6u)","descripcion":"Alitas de pollo carnosas a la brasa de encina con glaseado casero de salsa barbacoa al bourbon y miel de romero, con toque de sésamo blanco tostado.","precio_cents":720,"imagen_url":"https://images.unsplash.com/photo-1567620832903-9fc6debc209f?w=600&auto=format&fit=crop&q=80","disponible":true,"destacado":false,"alergenos":["sesamo","sulfitos"],"grupos_opciones":[]}]},{"id":"cat_demo_3","nombre":"Postres Caseros","orden":3,"productos":[{"id":"prod_pos1","nombre":"Tarta de Queso Fluida al Horno","descripcion":"Elaborada artesanalmente cada mañana con queso crema e Idiazábal ahumado. Textura fundente en el corazón con base crujiente de galleta y coulis de frambuesa.","precio_cents":590,"imagen_url":"https://images.unsplash.com/photo-1533134242443-d4fd215305ad?w=600&auto=format&fit=crop&q=80","disponible":true,"destacado":true,"alergenos":["gluten","lacteos","huevo"],"grupos_opciones":[]}]},{"id":"cat_demo_4","nombre":"Bebidas & Cervezas","orden":4,"productos":[{"id":"prod_beb1","nombre":"Cerveza Artesana Fogonazo IPA (33cl)","descripcion":"Cerveza rubia aromática con lúpulos cítricos y amargor equilibrado, maridaje perfecto para nuestras carnes a la brasa.","precio_cents":350,"imagen_url":"https://images.unsplash.com/photo-1608270586620-248524c67de9?w=600&auto=format&fit=crop&q=80","disponible":true,"destacado":false,"alergenos":["gluten"],"grupos_opciones":[]},{"id":"prod_beb2","nombre":"Limonada Casera de Jengibre y Menta","descripcion":"Zumo natural de limones recién exprimidos con infusión de jengibre fresco, hojas de hierbabuena y azúcar de caña.","precio_cents":280,"imagen_url":"https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=600&auto=format&fit=crop&q=80","disponible":true,"destacado":false,"alergenos":[],"grupos_opciones":[]}]}];
   </script>
 
-  <script src="/js/customer-engine.js"></script>
+  <script src="js/customer-engine.js"></script>
   <script>
     function toggleTopNavMenu(e) {
       if (e) e.stopPropagation();
@@ -1861,7 +1893,7 @@
 
         const actionButtonHtml = isDelivered
           ? `<button type="button" onclick="openIncidentForOrder('${o.numero_comanda || ''}', '${o.tracking_token || ''}', '${o.id || ''}')" class="btn btn-secondary" style="padding:6px 12px; font-size:0.8rem; min-height:34px; border-radius:8px; color:#dc2626; border-color:#fca5a5; background:#fff5f5; font-weight:800;">Abrir una incidencia</button>`
-          : `<a href="/pedido/${encodeURIComponent(o.tracking_token || '')}" class="btn btn-secondary" style="padding:6px 12px; font-size:0.8rem; min-height:34px; border-radius:8px;">Ver seguimiento</a>`;
+          : `<a href="seguimiento.html?token=${encodeURIComponent(o.tracking_token || '')}" class="btn btn-secondary" style="padding:6px 12px; font-size:0.8rem; min-height:34px; border-radius:8px;">Ver seguimiento</a>`;
 
         return `
           <div style="border:1px solid #e2e8f0; border-radius:12px; padding:12px; background:#f8fafc; display:flex; flex-direction:column; gap:8px;">
@@ -1882,8 +1914,7 @@
       }).join('');
     }
 
-    async function openPastOrdersModal() {
-      closeTopNavMenu();
+    async function syncLocalOrdersWithSupabase() {
       let orders = [];
       try {
         const raw = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
@@ -1892,14 +1923,98 @@
         }
       } catch (_) {}
 
-      renderPastOrdersList(orders);
+      if (!window.supabaseClient || orders.length === 0) {
+        return orders;
+      }
+
+      const validOrders = [];
+      await Promise.all(orders.map(async (o) => {
+        if (!o.tracking_token) return;
+        try {
+          const { data: rpcOrder, error: rpcErr } = await window.supabaseClient.rpc('obtener_pedido_por_token', {
+            p_token: o.tracking_token
+          });
+          if (!rpcErr && rpcOrder) {
+            if (rpcOrder.ok) {
+              o.estado = rpcOrder.estado || o.estado;
+              validOrders.push(o);
+            }
+            // Si rpcOrder.ok === false, el pedido fue eliminado de la base de datos y se descarta de localStorage
+          } else {
+            validOrders.push(o);
+          }
+        } catch (_) {
+          validOrders.push(o);
+        }
+      }));
+
+      validOrders.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+      try {
+        if (validOrders.length === 0) {
+          localStorage.removeItem('fogon_orders');
+        } else {
+          localStorage.setItem('fogon_orders', JSON.stringify(validOrders));
+        }
+      } catch (_) {}
+      return validOrders;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      syncLocalOrdersWithSupabase();
+    });
+
+    async function openPastOrdersModal() {
+      closeTopNavMenu();
+      const body = document.getElementById('past-orders-list-body');
+      if (body) {
+        body.innerHTML = `<div style="text-align:center; padding:2rem 1rem; color:var(--text-muted); font-size:0.88rem;">Comprobando tus pedidos...</div>`;
+      }
       document.body.classList.add('modal-open');
       document.getElementById('past-orders-modal').classList.add('open');
+
+      const validOrders = await syncLocalOrdersWithSupabase();
+      renderPastOrdersList(validOrders);
     }
 
     function closePastOrdersModal() {
       document.body.classList.remove('modal-open');
       document.getElementById('past-orders-modal').classList.remove('open');
+    }
+
+    let modalIncidentPollTimer = null;
+
+    function startModalIncidentPolling() {
+      stopModalIncidentPolling();
+      loadModalIncidentChat();
+      modalIncidentPollTimer = setInterval(() => {
+        const modal = document.getElementById('incidents-modal');
+        if (modal && modal.classList.contains('open')) {
+          loadModalIncidentChat();
+        } else {
+          stopModalIncidentPolling();
+        }
+      }, 3000);
+    }
+
+    function stopModalIncidentPolling() {
+      if (modalIncidentPollTimer) {
+        clearInterval(modalIncidentPollTimer);
+        modalIncidentPollTimer = null;
+      }
+    }
+
+    function handleIncidentOrderInputChange(val) {
+      const cleanNum = String(val || '').replace('#', '').trim();
+      try {
+        const raw = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
+        if (Array.isArray(raw)) {
+          const found = raw.find(o => String(o.numero_comanda) === cleanNum);
+          if (found && found.tracking_token) {
+            currentIncidentTrackingToken = found.tracking_token;
+            loadModalIncidentChat();
+          }
+        }
+      } catch (_) {}
     }
 
     function openIncidentForOrder(orderNum, trackingToken) {
@@ -1911,6 +2026,7 @@
       }
       document.body.classList.add('modal-open');
       document.getElementById('incidents-modal').classList.add('open');
+      startModalIncidentPolling();
     }
 
     function openIncidentsModal() {
@@ -1926,11 +2042,148 @@
       } catch (_) {}
       document.body.classList.add('modal-open');
       document.getElementById('incidents-modal').classList.add('open');
+      startModalIncidentPolling();
     }
 
     function closeIncidentsModal() {
+      stopModalIncidentPolling();
       document.body.classList.remove('modal-open');
       document.getElementById('incidents-modal').classList.remove('open');
+    }
+
+    function escapeIncHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    async function loadModalIncidentChat() {
+      const createView = document.getElementById('modal-inc-create-view');
+      const chatView = document.getElementById('modal-inc-chat-view');
+      const headerTitle = document.getElementById('modal-inc-header-title');
+      const pillEl = document.getElementById('modal-inc-status-pill');
+      const motivoBanner = document.getElementById('modal-inc-motivo-banner');
+      const listEl = document.getElementById('modal-inc-messages-list');
+      const replyForm = document.getElementById('modal-inc-reply-form');
+      const closedBanner = document.getElementById('modal-inc-closed-banner');
+      if (!createView || !chatView || !listEl) return;
+
+      if (!currentIncidentTrackingToken || !window.supabaseClient) {
+        createView.style.display = 'block';
+        chatView.style.display = 'none';
+        if (headerTitle) headerTitle.textContent = 'Gestión de incidencias';
+        if (pillEl) pillEl.style.display = 'none';
+        return;
+      }
+
+      try {
+        const { data, error } = await window.supabaseClient.rpc('obtener_mensajes_chat_cliente', {
+          p_token: currentIncidentTrackingToken
+        });
+        if (error) return;
+        const rows = Array.isArray(data) ? data : (data && Array.isArray(data.mensajes) ? data.mensajes : []);
+
+        let incMotivo = null;
+        let incResuelta = false;
+        const incMsgs = [];
+
+        rows.forEach(m => {
+          const raw = typeof (m.texto || m.mensaje) === 'string' ? (m.texto || m.mensaje).trim() : '';
+          if (!raw) return;
+          const sender = m.remitente || m.emisor || 'cliente';
+
+          if (sender === 'restaurante' && raw.startsWith('[INCIDENCIA_RESUELTA:')) {
+            incResuelta = true;
+            return;
+          }
+
+          if (sender === 'cliente' && raw.startsWith('[INCIDENCIA')) {
+            const closeBracket = raw.indexOf(']');
+            let motivo = 'Incidencia';
+            let detalle = raw;
+            if (closeBracket !== -1) {
+              motivo = raw.substring(1, closeBracket).replace(/^INCIDENCIA\s*-\s*/i, '').trim() || 'Incidencia';
+              detalle = raw.substring(closeBracket + 1).trim();
+            }
+            if (!incMotivo || incResuelta) {
+              incMotivo = motivo;
+              incResuelta = false;
+              incMsgs.length = 0;
+            }
+            incMsgs.push({
+              id: m.id,
+              remitente: 'cliente',
+              texto: detalle,
+              created_at: m.created_at
+            });
+            return;
+          }
+
+          if (incMotivo) {
+            incMsgs.push({
+              id: m.id,
+              remitente: sender,
+              texto: raw.replace(/^\[INC_MSG\]\s*/i, ''),
+              created_at: m.created_at
+            });
+          }
+        });
+
+        if (!incMotivo) {
+          createView.style.display = 'block';
+          chatView.style.display = 'none';
+          if (headerTitle) headerTitle.textContent = 'Gestión de incidencias';
+          if (pillEl) pillEl.style.display = 'none';
+          return;
+        }
+
+        createView.style.display = 'none';
+        chatView.style.display = 'flex';
+        const ordNumVal = (document.getElementById('inc-order-num') || {}).value || '';
+        if (headerTitle) headerTitle.textContent = 'Chat de Incidencia ' + (ordNumVal ? '(' + ordNumVal + ')' : '');
+        if (motivoBanner) motivoBanner.textContent = 'Motivo: ' + incMotivo;
+
+        if (pillEl) {
+          pillEl.style.display = 'inline-flex';
+          if (incResuelta) {
+            pillEl.textContent = '✓ Cerrada';
+            pillEl.style.background = '#dcfce7';
+            pillEl.style.color = '#166534';
+          } else {
+            pillEl.textContent = 'En curso';
+            pillEl.style.background = '#fee2e2';
+            pillEl.style.color = '#991b1b';
+          }
+        }
+
+        if (replyForm) replyForm.style.display = incResuelta ? 'none' : 'flex';
+        if (closedBanner) closedBanner.style.display = incResuelta ? 'block' : 'none';
+
+        listEl.innerHTML = incMsgs.map(m => {
+          const isCliente = m.remitente === 'cliente';
+          const bg = isCliente ? '#fff1f2' : '#0f172a';
+          const color = isCliente ? '#881337' : '#ffffff';
+          const metaColor = isCliente ? '#be123c' : '#cbd5e1';
+          const align = isCliente ? 'flex-end' : 'flex-start';
+          const border = isCliente ? '#fecdd3' : '#1e293b';
+          const timeStr = m.created_at ? new Date(m.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '';
+          return `
+            <div style="align-self: ${align}; max-width: 84%; background: ${bg}; color: ${color}; border: 1px solid ${border}; border-radius: 12px; padding: 8px 12px; font-size: 0.85rem;">
+              <div style="font-size: 0.7rem; font-weight: 800; color: ${metaColor}; margin-bottom: 2px;">
+                ${isCliente ? 'Tú' : 'Restaurante'}${timeStr ? ' • ' + timeStr : ''}
+              </div>
+              <div style="word-break: break-word;">${escapeIncHtml(m.texto)}</div>
+            </div>
+          `;
+        }).join('');
+        listEl.scrollTop = listEl.scrollHeight;
+      } catch (err) {
+        console.warn('Error cargando chat de incidencia:', err);
+      }
     }
 
     async function handleIncidentSubmit(e) {
@@ -1942,14 +2195,78 @@
 
       const btn = document.getElementById('btn-submit-incident');
       btn.disabled = true;
-      btn.textContent = 'Enviando incidencia...';
+      btn.textContent = 'Abriendo chat...';
+
+      const cleanNum = orderRef.replace('#', '').trim();
+      let matchedOrder = null;
+      try {
+        const raw = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
+        if (Array.isArray(raw)) {
+          matchedOrder = raw.find(o => String(o.numero_comanda) === cleanNum) || raw[0] || null;
+        }
+      } catch (_) {}
+
+      const tokenToUse = currentIncidentTrackingToken || (matchedOrder && matchedOrder.tracking_token) || null;
+      currentIncidentTrackingToken = tokenToUse;
+
+      try {
+        const localIncs = JSON.parse(localStorage.getItem('fogon_incidents') || '[]');
+        localIncs.unshift({
+          id: 'inc_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+          pedido_id: matchedOrder ? matchedOrder.id : null,
+          numero_comanda: cleanNum,
+          motivo,
+          texto: desc,
+          created_at: new Date().toISOString()
+        });
+        localStorage.setItem('fogon_incidents', JSON.stringify(localIncs.slice(0, 100)));
+      } catch (_) {}
+
+      if (tokenToUse && window.supabaseClient) {
+        try {
+          await window.supabaseClient.rpc('enviar_mensaje_cliente', {
+            p_token: tokenToUse,
+            p_texto: `[INCIDENCIA - ${motivo}] ${desc}`
+          });
+        } catch (_) {}
+      }
 
       btn.disabled = false;
-      btn.textContent = 'Enviar incidencia al restaurante';
+      btn.textContent = 'Iniciar chat de incidencia';
       document.getElementById('inc-desc').value = '';
-      closeIncidentsModal();
-      if (typeof showToast === 'function') {
-        showToast('Incidencia enviada. El restaurante la tiene en su panel de incidencias pendientes.', 'success');
+
+      if (tokenToUse) {
+        await loadModalIncidentChat();
+      } else {
+        closeIncidentsModal();
+        if (typeof showToast === 'function') {
+          showToast('Incidencia enviada al restaurante.', 'success');
+        }
+      }
+    }
+
+    async function handleSendModalIncidentReply(e) {
+      e.preventDefault();
+      const input = document.getElementById('modal-inc-reply-input');
+      const btn = document.getElementById('btn-send-modal-inc-reply');
+      if (!input) return;
+      const msg = input.value.trim();
+      if (!msg || !currentIncidentTrackingToken || !window.supabaseClient) return;
+
+      if (btn) btn.disabled = true;
+      try {
+        const { data, error } = await window.supabaseClient.rpc('enviar_mensaje_cliente', {
+          p_token: currentIncidentTrackingToken,
+          p_texto: `[INC_MSG] ${msg}`
+        });
+        if (!error && data && data.ok) {
+          input.value = '';
+          await loadModalIncidentChat();
+        }
+      } catch (err) {
+        console.warn('Error enviando respuesta de incidencia:', err);
+      } finally {
+        if (btn) btn.disabled = false;
       }
     }
   </script>

@@ -1684,39 +1684,58 @@
     </div>
   </div>
 
-  <!-- 11. MODAL: GESTIÓN DE INCIDENCIAS -->
+  <!-- 11. MODAL: GESTIÓN DE INCIDENCIAS (CHAT EN VIVO) -->
   <div class="modal-overlay" id="incidents-modal" onclick="if(event.target.id==='incidents-modal') closeIncidentsModal()">
     <div class="modal-card">
       <div class="sheet-drag-handle"></div>
       <div class="modal-header">
-        <h3 class="modal-title">Gestión de incidencias</h3>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <h3 class="modal-title" id="modal-inc-header-title">Gestión de incidencias</h3>
+          <span id="modal-inc-status-pill" style="display:none; font-size:0.74rem; font-weight:800; padding:3px 9px; border-radius:999px;"></span>
+        </div>
         <button onclick="closeIncidentsModal()" class="btn-close-modal" aria-label="Cerrar">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
       </div>
       <div class="modal-body">
-        <p style="font-size:0.88rem; color:var(--text-muted); margin:0;">¿Has tenido algún problema con tu pedido? Envíanos los detalles y el restaurante lo atenderá de inmediato.</p>
-        <form onsubmit="handleIncidentSubmit(event)" id="incident-form">
-          <div class="form-group">
-            <label for="inc-order-num" class="form-label">Nº de comanda o teléfono</label>
-            <input type="text" id="inc-order-num" class="form-input" required placeholder="Ej. #113 o 654 321 000">
+        <!-- Vista 1: Formulario para abrir nueva incidencia -->
+        <div id="modal-inc-create-view">
+          <p style="font-size:0.88rem; color:var(--text-muted); margin:0 0 12px 0;">¿Has tenido algún problema con tu pedido? Abre un chat de incidencia directo con el restaurante:</p>
+          <form onsubmit="handleIncidentSubmit(event)" id="incident-form">
+            <div class="form-group">
+              <label for="inc-order-num" class="form-label">Nº de comanda</label>
+              <input type="text" id="inc-order-num" class="form-input" required placeholder="Ej. #113" oninput="handleIncidentOrderInputChange(this.value)">
+            </div>
+            <div class="form-group">
+              <label for="inc-type" class="form-label">Motivo de la incidencia</label>
+              <select id="inc-type" class="form-input" required>
+                <option value="Producto incompleto o erróneo">Producto incompleto o erróneo</option>
+                <option value="Comida fría o en mal estado">Comida fría o en mal estado</option>
+                <option value="Retraso en la entrega">Retraso en la entrega</option>
+                <option value="Problema con el pago">Problema con el pago</option>
+                <option value="Otro motivo">Otro motivo</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="inc-desc" class="form-label">Mensaje inicial</label>
+              <textarea id="inc-desc" class="form-input" rows="3" required placeholder="Cuéntanos qué ha ocurrido para solucionarlo rápidamente..." style="min-height:84px; resize:vertical;"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" id="btn-submit-incident" style="width:100%; min-height:48px; font-weight:800;">Iniciar chat de incidencia</button>
+          </form>
+        </div>
+
+        <!-- Vista 2: Chat de incidencia en tiempo real -->
+        <div id="modal-inc-chat-view" style="display:none; flex-direction:column; gap:10px;">
+          <div id="modal-inc-motivo-banner" style="font-size:0.82rem; font-weight:800; color:#991b1b; background:#fee2e2; border:1px solid #fecaca; padding:7px 10px; border-radius:8px;"></div>
+          <div id="modal-inc-messages-list" style="max-height:260px; min-height:140px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px;"></div>
+          <form id="modal-inc-reply-form" onsubmit="handleSendModalIncidentReply(event)" style="display:flex; gap:8px;">
+            <input type="text" id="modal-inc-reply-input" class="form-input" placeholder="Escribe un mensaje al restaurante..." style="flex:1; min-height:42px;" required autocomplete="off">
+            <button type="submit" id="btn-send-modal-inc-reply" class="btn btn-primary" style="padding:0 16px; min-height:42px; font-weight:800;">Enviar</button>
+          </form>
+          <div id="modal-inc-closed-banner" style="display:none; padding:10px 12px; border-radius:8px; background:#dcfce7; border:1px solid #bbf7d0; color:#166534; font-weight:800; font-size:0.84rem; text-align:center;">
+            ✓ El restaurante ha cerrado y dado por resuelta esta incidencia.
           </div>
-          <div class="form-group">
-            <label for="inc-type" class="form-label">Motivo de la incidencia</label>
-            <select id="inc-type" class="form-input" required>
-              <option value="Retraso en la entrega">Retraso en la entrega</option>
-              <option value="Producto incompleto o erróneo">Producto incompleto o erróneo</option>
-              <option value="Modificar dirección o nota">Modificar dirección o nota</option>
-              <option value="Problema con el pago">Problema con el pago</option>
-              <option value="Otro motivo">Otro motivo</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="inc-desc" class="form-label">Descripción detallada</label>
-            <textarea id="inc-desc" class="form-input" rows="3" required placeholder="Cuéntanos qué ha ocurrido para solucionarlo rápidamente..." style="min-height:84px; resize:vertical;"></textarea>
-          </div>
-          <button type="submit" class="btn btn-primary" id="btn-submit-incident" style="width:100%; min-height:48px; font-weight:800;">Enviar incidencia al restaurante</button>
-        </form>
+        </div>
       </div>
     </div>
   </div>
@@ -1962,6 +1981,42 @@
       document.getElementById('past-orders-modal').classList.remove('open');
     }
 
+    let modalIncidentPollTimer = null;
+
+    function startModalIncidentPolling() {
+      stopModalIncidentPolling();
+      loadModalIncidentChat();
+      modalIncidentPollTimer = setInterval(() => {
+        const modal = document.getElementById('incidents-modal');
+        if (modal && modal.classList.contains('open')) {
+          loadModalIncidentChat();
+        } else {
+          stopModalIncidentPolling();
+        }
+      }, 3000);
+    }
+
+    function stopModalIncidentPolling() {
+      if (modalIncidentPollTimer) {
+        clearInterval(modalIncidentPollTimer);
+        modalIncidentPollTimer = null;
+      }
+    }
+
+    function handleIncidentOrderInputChange(val) {
+      const cleanNum = String(val || '').replace('#', '').trim();
+      try {
+        const raw = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
+        if (Array.isArray(raw)) {
+          const found = raw.find(o => String(o.numero_comanda) === cleanNum);
+          if (found && found.tracking_token) {
+            currentIncidentTrackingToken = found.tracking_token;
+            loadModalIncidentChat();
+          }
+        }
+      } catch (_) {}
+    }
+
     function openIncidentForOrder(orderNum, trackingToken) {
       closePastOrdersModal();
       currentIncidentTrackingToken = trackingToken || null;
@@ -1971,6 +2026,7 @@
       }
       document.body.classList.add('modal-open');
       document.getElementById('incidents-modal').classList.add('open');
+      startModalIncidentPolling();
     }
 
     function openIncidentsModal() {
@@ -1986,11 +2042,148 @@
       } catch (_) {}
       document.body.classList.add('modal-open');
       document.getElementById('incidents-modal').classList.add('open');
+      startModalIncidentPolling();
     }
 
     function closeIncidentsModal() {
+      stopModalIncidentPolling();
       document.body.classList.remove('modal-open');
       document.getElementById('incidents-modal').classList.remove('open');
+    }
+
+    function escapeIncHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    async function loadModalIncidentChat() {
+      const createView = document.getElementById('modal-inc-create-view');
+      const chatView = document.getElementById('modal-inc-chat-view');
+      const headerTitle = document.getElementById('modal-inc-header-title');
+      const pillEl = document.getElementById('modal-inc-status-pill');
+      const motivoBanner = document.getElementById('modal-inc-motivo-banner');
+      const listEl = document.getElementById('modal-inc-messages-list');
+      const replyForm = document.getElementById('modal-inc-reply-form');
+      const closedBanner = document.getElementById('modal-inc-closed-banner');
+      if (!createView || !chatView || !listEl) return;
+
+      if (!currentIncidentTrackingToken || !window.supabaseClient) {
+        createView.style.display = 'block';
+        chatView.style.display = 'none';
+        if (headerTitle) headerTitle.textContent = 'Gestión de incidencias';
+        if (pillEl) pillEl.style.display = 'none';
+        return;
+      }
+
+      try {
+        const { data, error } = await window.supabaseClient.rpc('obtener_mensajes_chat_cliente', {
+          p_token: currentIncidentTrackingToken
+        });
+        if (error) return;
+        const rows = Array.isArray(data) ? data : (data && Array.isArray(data.mensajes) ? data.mensajes : []);
+
+        let incMotivo = null;
+        let incResuelta = false;
+        const incMsgs = [];
+
+        rows.forEach(m => {
+          const raw = typeof (m.texto || m.mensaje) === 'string' ? (m.texto || m.mensaje).trim() : '';
+          if (!raw) return;
+          const sender = m.remitente || m.emisor || 'cliente';
+
+          if (sender === 'restaurante' && raw.startsWith('[INCIDENCIA_RESUELTA:')) {
+            incResuelta = true;
+            return;
+          }
+
+          if (sender === 'cliente' && raw.startsWith('[INCIDENCIA')) {
+            const closeBracket = raw.indexOf(']');
+            let motivo = 'Incidencia';
+            let detalle = raw;
+            if (closeBracket !== -1) {
+              motivo = raw.substring(1, closeBracket).replace(/^INCIDENCIA\s*-\s*/i, '').trim() || 'Incidencia';
+              detalle = raw.substring(closeBracket + 1).trim();
+            }
+            if (!incMotivo || incResuelta) {
+              incMotivo = motivo;
+              incResuelta = false;
+              incMsgs.length = 0;
+            }
+            incMsgs.push({
+              id: m.id,
+              remitente: 'cliente',
+              texto: detalle,
+              created_at: m.created_at
+            });
+            return;
+          }
+
+          if (incMotivo) {
+            incMsgs.push({
+              id: m.id,
+              remitente: sender,
+              texto: raw.replace(/^\[INC_MSG\]\s*/i, ''),
+              created_at: m.created_at
+            });
+          }
+        });
+
+        if (!incMotivo) {
+          createView.style.display = 'block';
+          chatView.style.display = 'none';
+          if (headerTitle) headerTitle.textContent = 'Gestión de incidencias';
+          if (pillEl) pillEl.style.display = 'none';
+          return;
+        }
+
+        createView.style.display = 'none';
+        chatView.style.display = 'flex';
+        const ordNumVal = (document.getElementById('inc-order-num') || {}).value || '';
+        if (headerTitle) headerTitle.textContent = 'Chat de Incidencia ' + (ordNumVal ? '(' + ordNumVal + ')' : '');
+        if (motivoBanner) motivoBanner.textContent = 'Motivo: ' + incMotivo;
+
+        if (pillEl) {
+          pillEl.style.display = 'inline-flex';
+          if (incResuelta) {
+            pillEl.textContent = '✓ Cerrada';
+            pillEl.style.background = '#dcfce7';
+            pillEl.style.color = '#166534';
+          } else {
+            pillEl.textContent = 'En curso';
+            pillEl.style.background = '#fee2e2';
+            pillEl.style.color = '#991b1b';
+          }
+        }
+
+        if (replyForm) replyForm.style.display = incResuelta ? 'none' : 'flex';
+        if (closedBanner) closedBanner.style.display = incResuelta ? 'block' : 'none';
+
+        listEl.innerHTML = incMsgs.map(m => {
+          const isCliente = m.remitente === 'cliente';
+          const bg = isCliente ? '#fff1f2' : '#0f172a';
+          const color = isCliente ? '#881337' : '#ffffff';
+          const metaColor = isCliente ? '#be123c' : '#cbd5e1';
+          const align = isCliente ? 'flex-end' : 'flex-start';
+          const border = isCliente ? '#fecdd3' : '#1e293b';
+          const timeStr = m.created_at ? new Date(m.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '';
+          return `
+            <div style="align-self: ${align}; max-width: 84%; background: ${bg}; color: ${color}; border: 1px solid ${border}; border-radius: 12px; padding: 8px 12px; font-size: 0.85rem;">
+              <div style="font-size: 0.7rem; font-weight: 800; color: ${metaColor}; margin-bottom: 2px;">
+                ${isCliente ? 'Tú' : 'Restaurante'}${timeStr ? ' • ' + timeStr : ''}
+              </div>
+              <div style="word-break: break-word;">${escapeIncHtml(m.texto)}</div>
+            </div>
+          `;
+        }).join('');
+        listEl.scrollTop = listEl.scrollHeight;
+      } catch (err) {
+        console.warn('Error cargando chat de incidencia:', err);
+      }
     }
 
     async function handleIncidentSubmit(e) {
@@ -2002,7 +2195,7 @@
 
       const btn = document.getElementById('btn-submit-incident');
       btn.disabled = true;
-      btn.textContent = 'Enviando incidencia...';
+      btn.textContent = 'Abriendo chat...';
 
       const cleanNum = orderRef.replace('#', '').trim();
       let matchedOrder = null;
@@ -2014,6 +2207,7 @@
       } catch (_) {}
 
       const tokenToUse = currentIncidentTrackingToken || (matchedOrder && matchedOrder.tracking_token) || null;
+      currentIncidentTrackingToken = tokenToUse;
 
       try {
         const localIncs = JSON.parse(localStorage.getItem('fogon_incidents') || '[]');
@@ -2038,11 +2232,41 @@
       }
 
       btn.disabled = false;
-      btn.textContent = 'Enviar incidencia al restaurante';
+      btn.textContent = 'Iniciar chat de incidencia';
       document.getElementById('inc-desc').value = '';
-      closeIncidentsModal();
-      if (typeof showToast === 'function') {
-        showToast('Incidencia enviada. El restaurante la tiene en su panel de incidencias pendientes.', 'success');
+
+      if (tokenToUse) {
+        await loadModalIncidentChat();
+      } else {
+        closeIncidentsModal();
+        if (typeof showToast === 'function') {
+          showToast('Incidencia enviada al restaurante.', 'success');
+        }
+      }
+    }
+
+    async function handleSendModalIncidentReply(e) {
+      e.preventDefault();
+      const input = document.getElementById('modal-inc-reply-input');
+      const btn = document.getElementById('btn-send-modal-inc-reply');
+      if (!input) return;
+      const msg = input.value.trim();
+      if (!msg || !currentIncidentTrackingToken || !window.supabaseClient) return;
+
+      if (btn) btn.disabled = true;
+      try {
+        const { data, error } = await window.supabaseClient.rpc('enviar_mensaje_cliente', {
+          p_token: currentIncidentTrackingToken,
+          p_texto: `[INC_MSG] ${msg}`
+        });
+        if (!error && data && data.ok) {
+          input.value = '';
+          await loadModalIncidentChat();
+        }
+      } catch (err) {
+        console.warn('Error enviando respuesta de incidencia:', err);
+      } finally {
+        if (btn) btn.disabled = false;
       }
     }
   </script>

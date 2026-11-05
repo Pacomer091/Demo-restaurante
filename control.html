@@ -495,31 +495,117 @@
 
     .incident-item-card {
       background: #ffffff;
-      border: 1px solid #fecaca;
-      border-radius: 8px;
-      padding: 8px 10px;
+      border: 1.5px solid #fecaca;
+      border-radius: 10px;
+      padding: 10px 12px;
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 8px;
     }
 
     .incident-item-card.resolved {
       border-color: #bbf7d0;
       background: #f0fdf4;
-      opacity: 0.85;
+      opacity: 0.92;
+    }
+
+    .incident-chat-messages {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 210px;
+      overflow-y: auto;
+      padding: 6px 2px;
+      border-top: 1px dashed #fecaca;
+      border-bottom: 1px dashed #fecaca;
+    }
+
+    .incident-item-card.resolved .incident-chat-messages {
+      border-color: #bbf7d0;
+    }
+
+    .inc-msg-bubble {
+      max-width: 86%;
+      padding: 7px 10px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      line-height: 1.38;
+      word-break: break-word;
+    }
+
+    .inc-msg-bubble.from-cliente {
+      align-self: flex-start;
+      background: #fff1f2;
+      border: 1px solid #fecdd3;
+      color: #881337;
+      border-bottom-left-radius: 3px;
+    }
+
+    .inc-msg-bubble.from-restaurante {
+      align-self: flex-end;
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      color: #ffffff;
+      border-bottom-right-radius: 3px;
+    }
+
+    .inc-msg-meta {
+      font-size: 0.68rem;
+      font-weight: 800;
+      opacity: 0.78;
+      margin-bottom: 2px;
+    }
+
+    .incident-reply-form {
+      display: flex;
+      gap: 6px;
+      margin-top: 2px;
+    }
+
+    .incident-reply-input {
+      flex: 1;
+      padding: 7px 10px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-family: inherit;
+      outline: none;
+      background: #ffffff;
+    }
+
+    .incident-reply-input:focus {
+      border-color: var(--brand-orange);
+    }
+
+    .btn-send-incident-reply {
+      padding: 7px 12px;
+      border-radius: 8px;
+      border: none;
+      background: var(--brand-orange);
+      color: #ffffff;
+      font-size: 0.78rem;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-send-incident-reply:hover {
+      background: #e04800;
     }
 
     .btn-resolve-incident {
-      align-self: flex-start;
-      margin-top: 2px;
-      padding: 4px 10px;
-      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 10px;
+      border-radius: 7px;
       border: 1px solid #16a34a;
       background: #16a34a;
       color: #ffffff;
       font-size: 0.74rem;
       font-weight: 800;
       cursor: pointer;
+      white-space: nowrap;
     }
 
     .btn-resolve-incident:hover {
@@ -820,10 +906,25 @@
                 .filter(o => !FAKE_ORDER_IDS.has(o.id) && !DELETED_ORDER_IDS.has(o.id))
                 .map(o => {
                   const orderChats = chatRows.filter(m => m.pedido_id === o.id);
-                  const incidencias = orderChats
-                    .filter(m => m.remitente === 'cliente' && typeof m.texto === 'string' && m.texto.startsWith('[INCIDENCIA'))
-                    .map(m => {
-                      const raw = m.texto || '';
+                  const incidencias = [];
+                  let activeInc = null;
+
+                  orderChats.forEach(m => {
+                    const raw = typeof m.texto === 'string' ? m.texto.trim() : '';
+                    if (!raw) return;
+
+                    if (m.remitente === 'restaurante' && raw.startsWith('[INCIDENCIA_RESUELTA:')) {
+                      const matchId = raw.replace('[INCIDENCIA_RESUELTA:', '').replace(']', '').trim();
+                      const target = incidencias.find(inc => inc.id === matchId) || activeInc;
+                      if (target) {
+                        target.resuelta = true;
+                        RESOLVED_INCIDENT_IDS.add(target.id);
+                        if (activeInc && activeInc.id === target.id) activeInc = null;
+                      }
+                      return;
+                    }
+
+                    if (m.remitente === 'cliente' && raw.startsWith('[INCIDENCIA')) {
                       const closeBracket = raw.indexOf(']');
                       let motivo = 'Incidencia';
                       let detalle = raw;
@@ -831,15 +932,48 @@
                         motivo = raw.substring(1, closeBracket).replace(/^INCIDENCIA\s*-\s*/i, '').trim() || 'Incidencia';
                         detalle = raw.substring(closeBracket + 1).trim();
                       }
-                      return {
+                      if (activeInc && !activeInc.resuelta) {
+                        activeInc.mensajes.push({
+                          id: m.id,
+                          remitente: 'cliente',
+                          texto: detalle,
+                          created_at: m.created_at
+                        });
+                      } else {
+                        const newInc = {
+                          id: m.id,
+                          pedido_id: o.id,
+                          motivo,
+                          texto: detalle,
+                          created_at: m.created_at,
+                          resuelta: RESOLVED_INCIDENT_IDS.has(m.id),
+                          mensajes: [
+                            {
+                              id: m.id,
+                              remitente: 'cliente',
+                              texto: detalle,
+                              created_at: m.created_at
+                            }
+                          ]
+                        };
+                        incidencias.push(newInc);
+                        activeInc = newInc.resuelta ? null : newInc;
+                      }
+                      return;
+                    }
+
+                    // Cualquier otro mensaje del chat asociado a la incidencia activa o última incidencia
+                    const cleanMsg = raw.replace(/^\[INC_MSG\]\s*/i, '');
+                    const targetInc = activeInc || incidencias[incidencias.length - 1];
+                    if (targetInc) {
+                      targetInc.mensajes.push({
                         id: m.id,
-                        pedido_id: o.id,
-                        motivo,
-                        texto: detalle,
-                        created_at: m.created_at,
-                        resuelta: RESOLVED_INCIDENT_IDS.has(m.id)
-                      };
-                    });
+                        remitente: m.remitente || 'cliente',
+                        texto: cleanMsg,
+                        created_at: m.created_at
+                      });
+                    }
+                  });
 
                   return {
                     ...o,
@@ -897,13 +1031,17 @@
           );
           extraLocal.forEach(inc => {
             if (!existingIncs.some(e => e.id === inc.id || (e.texto === inc.texto && e.motivo === inc.motivo))) {
+              const initText = inc.texto || '';
               existingIncs.push({
                 id: inc.id || ('inc_loc_' + o.id),
                 pedido_id: o.id,
                 motivo: inc.motivo || 'Incidencia',
-                texto: inc.texto || '',
+                texto: initText,
                 created_at: inc.created_at || o.created_at,
-                resuelta: RESOLVED_INCIDENT_IDS.has(inc.id)
+                resuelta: RESOLVED_INCIDENT_IDS.has(inc.id),
+                mensajes: Array.isArray(inc.mensajes) && inc.mensajes.length > 0
+                  ? inc.mensajes
+                  : [{ id: inc.id || ('msg_loc_' + o.id), remitente: 'cliente', texto: initText, created_at: inc.created_at || o.created_at }]
               });
             }
           });
@@ -926,6 +1064,52 @@
       } catch (err) {
         console.error(err);
       }
+    }
+
+    async function sendRestaurantIncidentReply(e, pedidoId, incidentId) {
+      e.preventDefault();
+      const input = document.getElementById('inc-reply-input-' + incidentId);
+      const btn = document.getElementById('inc-reply-btn-' + incidentId);
+      if (!input) return;
+      const replyText = input.value.trim();
+      if (!replyText) return;
+
+      if (btn) btn.disabled = true;
+      input.value = '';
+
+      const newMsg = {
+        id: 'msg_rest_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+        remitente: 'restaurante',
+        texto: replyText,
+        created_at: new Date().toISOString()
+      };
+
+      ordersList.forEach(o => {
+        if (o.id === pedidoId && Array.isArray(o.incidencias)) {
+          const targetInc = o.incidencias.find(inc => inc.id === incidentId) || o.incidencias[o.incidencias.length - 1];
+          if (targetInc) {
+            if (!Array.isArray(targetInc.mensajes)) targetInc.mensajes = [];
+            targetInc.mensajes.push(newMsg);
+          }
+        }
+      });
+      renderOrders();
+
+      if (window.supabaseClient) {
+        try {
+          const { error } = await window.supabaseClient.from('mensajes_chat').insert({
+            id: newMsg.id,
+            pedido_id: pedidoId,
+            restaurante_id: REST_ID,
+            remitente: 'restaurante',
+            texto: '[INC_MSG] ' + replyText
+          });
+          if (error) console.warn('Error enviando respuesta de incidencia:', error);
+        } catch (err) {
+          console.warn('Error enviando respuesta:', err);
+        }
+      }
+      if (btn) btn.disabled = false;
     }
 
     async function resolveIncident(pedidoId, incidentId) {
@@ -953,12 +1137,26 @@
           console.warn('Error guardando resolución de incidencia:', e);
         }
       }
-      showToast('Incidencia marcada como resuelta', 'success');
+      showToast('Incidencia cerrada y marcada como resuelta', 'success');
     }
 
     function renderOrders() {
       const container = document.getElementById('orders-container');
       if (!container) return;
+
+      // Preservar texto escrito y foco en los inputs de respuesta del chat de incidencias durante el refresco en vivo
+      const draftValues = new Map();
+      let focusedInputId = null;
+      let selStart = null;
+      let selEnd = null;
+      container.querySelectorAll('.incident-reply-input').forEach(inp => {
+        if (inp.id && inp.value) draftValues.set(inp.id, inp.value);
+        if (document.activeElement === inp && inp.id) {
+          focusedInputId = inp.id;
+          selStart = inp.selectionStart;
+          selEnd = inp.selectionEnd;
+        }
+      });
 
       const allOrders = ordersList || [];
       const activeOrders = allOrders.filter(o => (o.estado || 'recibido') !== 'entregado');
@@ -1034,23 +1232,49 @@
             <div class="order-incidents-box">
               <div style="display:flex; justify-content:space-between; align-items:center;">
                 <strong style="color:#b91c1c; font-size:0.8rem; display:inline-flex; align-items:center; gap:5px;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                  Incidencias del cliente (${incs.length})
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                  Chat de Incidencia (${incs.length})
                 </strong>
               </div>
-              ${incs.map(inc => `
-                <div class="incident-item-card ${inc.resuelta ? 'resolved' : ''}">
-                  <div style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
-                    <strong style="color:${inc.resuelta ? '#15803d' : '#991b1b'}; font-size:0.8rem;">${escapeHtml(inc.motivo)}</strong>
-                    <span style="font-size:0.7rem; color:var(--text-muted);">${inc.created_at ? new Date(inc.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+              ${incs.map(inc => {
+                const msgs = Array.isArray(inc.mensajes) && inc.mensajes.length > 0
+                  ? inc.mensajes
+                  : [{ id: inc.id, remitente: 'cliente', texto: inc.texto, created_at: inc.created_at }];
+                const messagesHtml = msgs.map(msg => {
+                  const isRest = msg.remitente === 'restaurante';
+                  const timeStr = msg.created_at ? new Date(msg.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '';
+                  return `
+                    <div class="inc-msg-bubble ${isRest ? 'from-restaurante' : 'from-cliente'}">
+                      <div class="inc-msg-meta">${isRest ? 'Restaurante' : escapeHtml(order.cliente_nombre || 'Cliente')}${timeStr ? ' • ' + timeStr : ''}</div>
+                      <div>${escapeHtml(msg.texto)}</div>
+                    </div>
+                  `;
+                }).join('');
+
+                return `
+                  <div class="incident-item-card ${inc.resuelta ? 'resolved' : ''}">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; flex-wrap:wrap;">
+                      <strong style="color:${inc.resuelta ? '#15803d' : '#991b1b'}; font-size:0.82rem;">Motivo: ${escapeHtml(inc.motivo)}</strong>
+                      ${inc.resuelta
+                        ? `<span style="font-size:0.73rem; font-weight:800; color:#15803d; background:#dcfce7; padding:3px 8px; border-radius:999px;">✓ Incidencia cerrada</span>`
+                        : `<button type="button" class="btn-resolve-incident" onclick="resolveIncident('${order.id}', '${inc.id}')">✓ Cerrar incidencia</button>`
+                      }
+                    </div>
+                    <div class="incident-chat-messages" id="inc-chat-box-${inc.id}">
+                      ${messagesHtml}
+                    </div>
+                    ${inc.resuelta
+                      ? `<div style="font-size:0.73rem; color:#15803d; font-weight:700; text-align:center;">Chat de incidencia finalizado por el restaurante</div>`
+                      : `
+                        <form class="incident-reply-form" onsubmit="sendRestaurantIncidentReply(event, '${order.id}', '${inc.id}')">
+                          <input type="text" id="inc-reply-input-${inc.id}" class="incident-reply-input" placeholder="Responder al cliente..." required autocomplete="off">
+                          <button type="submit" id="inc-reply-btn-${inc.id}" class="btn-send-incident-reply">Enviar</button>
+                        </form>
+                      `
+                    }
                   </div>
-                  <div style="color:var(--text-main); font-size:0.8rem;">${escapeHtml(inc.texto)}</div>
-                  ${inc.resuelta
-                    ? `<span style="font-size:0.72rem; font-weight:800; color:#15803d;">✓ Incidencia resuelta</span>`
-                    : `<button type="button" class="btn-resolve-incident" onclick="resolveIncident('${order.id}', '${inc.id}')">Marcar incidencia como resuelta</button>`
-                  }
-                </div>
-              `).join('')}
+                `;
+              }).join('')}
             </div>
           `;
         } else if (isDelivered) {
@@ -1133,6 +1357,24 @@
           </div>
         `;
       }).join('');
+
+      // Restaurar borradores de texto, foco del cursor y posición de scroll de los chats de incidencias
+      draftValues.forEach((val, id) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val;
+      });
+      if (focusedInputId) {
+        const el = document.getElementById(focusedInputId);
+        if (el) {
+          el.focus();
+          try {
+            if (selStart !== null && selEnd !== null) el.setSelectionRange(selStart, selEnd);
+          } catch (_) {}
+        }
+      }
+      container.querySelectorAll('.incident-chat-messages').forEach(box => {
+        box.scrollTop = box.scrollHeight;
+      });
     }
 
     async function setOrderStatus(orderId, nuevoEstado) {
@@ -1365,6 +1607,9 @@
           window.supabaseClient
             .channel('kds-orders-channel')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos' }, () => {
+              loadOrders();
+            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'mensajes_chat' }, () => {
               loadOrders();
             })
             .subscribe();

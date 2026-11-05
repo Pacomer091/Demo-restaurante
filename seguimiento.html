@@ -507,35 +507,52 @@
       </form>
     </div>
 
-    <!-- Bloque exclusivo cuando el pedido ya está ENTREGADO: Abrir una incidencia -->
+    <!-- Bloque exclusivo cuando el pedido ya está ENTREGADO: Chat de Incidencia -->
     <div class="details-box" id="delivered-incident-box" style="display:none; margin-top: 1.5rem; border: 1.5px solid #fecaca; background: #fff5f5;">
       <h2 class="details-heading" style="border-bottom-color: #fecaca;">
         <span style="display:flex; align-items:center; gap:8px; color:#b91c1c;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-          ¿Algún problema con tu pedido entregado?
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          <span id="trk-inc-box-title">¿Algún problema con tu pedido entregado?</span>
         </span>
+        <span id="trk-inc-status-pill" style="display:none; font-size:0.74rem; font-weight:800; padding:3px 9px; border-radius:999px;"></span>
       </h2>
-      <p style="font-size:0.86rem; color:#7f1d1d; margin:0 0 12px 0;">
-        Tu pedido figura como entregado y el seguimiento en vivo ha finalizado. Si has tenido cualquier problema con tu comanda, puedes abrir una incidencia aquí mismo:
-      </p>
-      <button type="button" id="btn-toggle-incident-form" onclick="document.getElementById('tracking-incident-form').style.display='flex'; this.style.display='none';" class="btn btn-primary" style="background:#dc2626; border-color:#dc2626; width:100%; justify-content:center; font-weight:800;">
-        Abrir una incidencia
-      </button>
-      <form id="tracking-incident-form" onsubmit="handleTrackingIncidentSubmit(event)" style="display:none; flex-direction:column; gap:10px; margin-top:8px;">
-        <select id="trk-inc-motivo" style="padding:10px 12px; border-radius:10px; border:1.5px solid #fca5a5; font-family:inherit; font-size:0.9rem; background:#ffffff;" required>
-          <option value="Producto incompleto o erróneo">Producto incompleto o erróneo</option>
-          <option value="Comida fría o en mal estado">Comida fría o en mal estado</option>
-          <option value="Retraso en la entrega">Retraso en la entrega</option>
-          <option value="Problema con el cobro">Problema con el cobro</option>
-          <option value="Otro motivo">Otro motivo</option>
-        </select>
-        <textarea id="trk-inc-texto" rows="3" placeholder="Explica brevemente qué ha ocurrido..." style="padding:10px 12px; border-radius:10px; border:1.5px solid #fca5a5; font-family:inherit; font-size:0.9rem; background:#ffffff; resize:vertical;" required></textarea>
-        <button type="submit" id="btn-send-trk-inc" class="btn btn-primary" style="background:#dc2626; border-color:#dc2626; justify-content:center; font-weight:800;">
-          Enviar incidencia al restaurante
+
+      <!-- Vista 1: Aún no hay incidencia abierta -->
+      <div id="trk-inc-create-view">
+        <p style="font-size:0.86rem; color:#7f1d1d; margin:0 0 12px 0;">
+          Tu pedido figura como entregado y el seguimiento en vivo ha finalizado. Si has tenido cualquier problema con tu comanda, abre un chat de incidencia con el restaurante:
+        </p>
+        <button type="button" id="btn-toggle-incident-form" onclick="document.getElementById('tracking-incident-form').style.display='flex'; this.style.display='none';" class="btn btn-primary" style="background:#dc2626; border-color:#dc2626; width:100%; justify-content:center; font-weight:800;">
+          Abrir una incidencia
         </button>
-      </form>
-      <div id="trk-inc-success" style="display:none; padding:10px; border-radius:8px; background:#dcfce7; color:#166534; font-weight:700; font-size:0.85rem; text-align:center;">
-        ✓ Tu incidencia ha sido enviada al restaurante y aparece en su panel de incidencias pendientes.
+        <form id="tracking-incident-form" onsubmit="handleTrackingIncidentSubmit(event)" style="display:none; flex-direction:column; gap:10px; margin-top:8px;">
+          <select id="trk-inc-motivo" style="padding:10px 12px; border-radius:10px; border:1.5px solid #fca5a5; font-family:inherit; font-size:0.9rem; background:#ffffff;" required>
+            <option value="Producto incompleto o erróneo">Producto incompleto o erróneo</option>
+            <option value="Comida fría o en mal estado">Comida fría o en mal estado</option>
+            <option value="Retraso en la entrega">Retraso en la entrega</option>
+            <option value="Problema con el cobro">Problema con el cobro</option>
+            <option value="Otro motivo">Otro motivo</option>
+          </select>
+          <textarea id="trk-inc-texto" rows="3" placeholder="Explica brevemente qué ha ocurrido..." style="padding:10px 12px; border-radius:10px; border:1.5px solid #fca5a5; font-family:inherit; font-size:0.9rem; background:#ffffff; resize:vertical;" required></textarea>
+          <button type="submit" id="btn-send-trk-inc" class="btn btn-primary" style="background:#dc2626; border-color:#dc2626; justify-content:center; font-weight:800;">
+            Iniciar chat de incidencia
+          </button>
+        </form>
+      </div>
+
+      <!-- Vista 2: Chat de incidencia activo o cerrado -->
+      <div id="trk-inc-chat-view" style="display:none; flex-direction:column; gap:10px;">
+        <div id="trk-inc-motivo-banner" style="font-size:0.82rem; font-weight:800; color:#991b1b; background:#fee2e2; border:1px solid #fecaca; padding:6px 10px; border-radius:8px;"></div>
+        <div id="trk-inc-messages-list" style="max-height:240px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; background:#ffffff; border:1px solid #fecaca; border-radius:10px; padding:10px;"></div>
+        <form id="trk-inc-reply-form" onsubmit="handleSendTrackingIncidentReply(event)" style="display:flex; gap:8px;">
+          <input type="text" id="trk-inc-reply-input" placeholder="Escribe un mensaje al restaurante..." style="flex:1; padding:10px 12px; border:1.5px solid #fca5a5; border-radius:10px; font-size:0.88rem; outline:none; background:#ffffff;" required autocomplete="off">
+          <button type="submit" id="btn-send-trk-inc-reply" class="btn btn-primary" style="background:#dc2626; border-color:#dc2626; padding:10px 16px; font-size:0.85rem; font-weight:800;">
+            Enviar
+          </button>
+        </form>
+        <div id="trk-inc-closed-banner" style="display:none; padding:10px 12px; border-radius:8px; background:#dcfce7; border:1px solid #bbf7d0; color:#166534; font-weight:800; font-size:0.84rem; text-align:center;">
+          ✓ El restaurante ha cerrado y dado por resuelta esta incidencia.
+        </div>
       </div>
     </div>
 
@@ -698,7 +715,7 @@
 
       const btn = document.getElementById('btn-send-trk-inc');
       btn.disabled = true;
-      btn.textContent = 'Enviando incidencia...';
+      btn.textContent = 'Abriendo chat de incidencia...';
 
       const ord = window.CURRENT_TRACKED_ORDER || {};
       try {
@@ -723,8 +740,35 @@
         } catch (_) {}
       }
 
-      document.getElementById('tracking-incident-form').style.display = 'none';
-      document.getElementById('trk-inc-success').style.display = 'block';
+      document.getElementById('trk-inc-texto').value = '';
+      btn.disabled = false;
+      btn.textContent = 'Iniciar chat de incidencia';
+      await loadChatMessages();
+    }
+
+    async function handleSendTrackingIncidentReply(e) {
+      e.preventDefault();
+      const input = document.getElementById('trk-inc-reply-input');
+      const btn = document.getElementById('btn-send-trk-inc-reply');
+      if (!input) return;
+      const msg = input.value.trim();
+      if (!msg || !window.supabaseClient || !ACTIVE_TOKEN) return;
+
+      if (btn) btn.disabled = true;
+      try {
+        const { data, error } = await window.supabaseClient.rpc('enviar_mensaje_cliente', {
+          p_token: ACTIVE_TOKEN,
+          p_texto: `[INC_MSG] ${msg}`
+        });
+        if (!error && data && data.ok) {
+          input.value = '';
+          await loadChatMessages();
+        }
+      } catch (err) {
+        console.warn('Error enviando mensaje de incidencia:', err);
+      } finally {
+        if (btn) btn.disabled = false;
+      }
     }
 
     async function fetchTrackingStatus() {
@@ -769,23 +813,138 @@
         const { data, error } = await window.supabaseClient.rpc('obtener_mensajes_chat_cliente', {
           p_token: ACTIVE_TOKEN
         });
-        if (!error && Array.isArray(data)) {
-          renderChatMessages(data);
+        const list = Array.isArray(data) ? data : (data && Array.isArray(data.mensajes) ? data.mensajes : []);
+        if (!error) {
+          renderChatMessages(list);
+          renderTrackingIncidentChat(list);
         }
       } catch (e) {
         console.warn('Chat load error:', e);
       }
     }
 
+    function renderTrackingIncidentChat(messages) {
+      const createView = document.getElementById('trk-inc-create-view');
+      const chatView = document.getElementById('trk-inc-chat-view');
+      const titleEl = document.getElementById('trk-inc-box-title');
+      const pillEl = document.getElementById('trk-inc-status-pill');
+      const motivoBanner = document.getElementById('trk-inc-motivo-banner');
+      const listEl = document.getElementById('trk-inc-messages-list');
+      const replyForm = document.getElementById('trk-inc-reply-form');
+      const closedBanner = document.getElementById('trk-inc-closed-banner');
+      if (!createView || !chatView || !listEl) return;
+
+      const rows = Array.isArray(messages) ? messages : [];
+      let incMotivo = null;
+      let incResuelta = false;
+      const incMsgs = [];
+
+      rows.forEach(m => {
+        const raw = typeof (m.texto || m.mensaje) === 'string' ? (m.texto || m.mensaje).trim() : '';
+        if (!raw) return;
+        const sender = m.remitente || m.emisor || 'cliente';
+
+        if (sender === 'restaurante' && raw.startsWith('[INCIDENCIA_RESUELTA:')) {
+          incResuelta = true;
+          return;
+        }
+
+        if (sender === 'cliente' && raw.startsWith('[INCIDENCIA')) {
+          const closeBracket = raw.indexOf(']');
+          let motivo = 'Incidencia';
+          let detalle = raw;
+          if (closeBracket !== -1) {
+            motivo = raw.substring(1, closeBracket).replace(/^INCIDENCIA\s*-\s*/i, '').trim() || 'Incidencia';
+            detalle = raw.substring(closeBracket + 1).trim();
+          }
+          if (!incMotivo || incResuelta) {
+            incMotivo = motivo;
+            incResuelta = false;
+            incMsgs.length = 0;
+          }
+          incMsgs.push({
+            id: m.id,
+            remitente: 'cliente',
+            texto: detalle,
+            created_at: m.created_at
+          });
+          return;
+        }
+
+        if (incMotivo) {
+          incMsgs.push({
+            id: m.id,
+            remitente: sender,
+            texto: raw.replace(/^\[INC_MSG\]\s*/i, ''),
+            created_at: m.created_at
+          });
+        }
+      });
+
+      if (!incMotivo) {
+        createView.style.display = 'block';
+        chatView.style.display = 'none';
+        if (titleEl) titleEl.textContent = '¿Algún problema con tu pedido entregado?';
+        if (pillEl) pillEl.style.display = 'none';
+        return;
+      }
+
+      createView.style.display = 'none';
+      chatView.style.display = 'flex';
+      if (titleEl) titleEl.textContent = 'Chat de Incidencia con el Restaurante';
+      if (motivoBanner) motivoBanner.textContent = 'Motivo: ' + incMotivo;
+
+      if (pillEl) {
+        pillEl.style.display = 'inline-flex';
+        if (incResuelta) {
+          pillEl.textContent = '✓ Cerrada';
+          pillEl.style.background = '#dcfce7';
+          pillEl.style.color = '#166534';
+        } else {
+          pillEl.textContent = 'En curso';
+          pillEl.style.background = '#fee2e2';
+          pillEl.style.color = '#991b1b';
+        }
+      }
+
+      if (replyForm) replyForm.style.display = incResuelta ? 'none' : 'flex';
+      if (closedBanner) closedBanner.style.display = incResuelta ? 'block' : 'none';
+
+      listEl.innerHTML = incMsgs.map(m => {
+        const isCliente = m.remitente === 'cliente';
+        const bg = isCliente ? '#fff1f2' : '#0f172a';
+        const color = isCliente ? '#881337' : '#ffffff';
+        const metaColor = isCliente ? '#be123c' : '#cbd5e1';
+        const align = isCliente ? 'flex-end' : 'flex-start';
+        const border = isCliente ? '#fecdd3' : '#1e293b';
+        const timeStr = m.created_at ? new Date(m.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '';
+        return `
+          <div style="align-self: ${align}; max-width: 84%; background: ${bg}; color: ${color}; border: 1px solid ${border}; border-radius: 12px; padding: 8px 12px; font-size: 0.85rem;">
+            <div style="font-size: 0.7rem; font-weight: 800; color: ${metaColor}; margin-bottom: 2px;">
+              ${isCliente ? 'Tú' : 'Restaurante'}${timeStr ? ' • ' + timeStr : ''}
+            </div>
+            <div style="word-break: break-word;">${escapeHtml(m.texto)}</div>
+          </div>
+        `;
+      }).join('');
+      listEl.scrollTop = listEl.scrollHeight;
+    }
+
     function renderChatMessages(messages) {
       const container = document.getElementById('chat-messages-container');
       if (!container) return;
-      if (!messages || messages.length === 0) {
+      const normalMessages = (messages || []).filter(m => {
+        const txt = String(m.texto || m.mensaje || '');
+        return !txt.startsWith('[INCIDENCIA') && !txt.startsWith('[INC_MSG]');
+      });
+      if (!normalMessages.length) {
         container.innerHTML = '<div style="font-size: 0.82rem; color: var(--text-muted); text-align: center; padding: 12px 0;">¿Tienes alguna duda sobre tu pedido? Escríbenos directamente aquí.</div>';
         return;
       }
-      container.innerHTML = messages.map(m => {
-        const isCliente = m.emisor === 'cliente';
+      container.innerHTML = normalMessages.map(m => {
+        const sender = m.remitente || m.emisor || 'cliente';
+        const text = m.texto || m.mensaje || '';
+        const isCliente = sender === 'cliente';
         const bg = isCliente ? 'rgba(255, 85, 0, 0.1)' : 'rgba(241, 245, 249, 1)';
         const align = isCliente ? 'flex-end' : 'flex-start';
         const border = isCliente ? 'rgba(255, 85, 0, 0.2)' : '#e2e8f0';
@@ -794,7 +953,7 @@
             <div style="font-size: 0.7rem; font-weight: 700; color: ${isCliente ? 'var(--brand-orange)' : '#64748b'}; margin-bottom: 2px;">
               ${isCliente ? 'Tú' : 'Restaurante'} • ${new Date(m.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
             </div>
-            <div style="color: var(--text-main); word-break: break-word;">${escapeHtml(m.mensaje)}</div>
+            <div style="color: var(--text-main); word-break: break-word;">${escapeHtml(text)}</div>
           </div>
         `;
       }).join('');
@@ -812,7 +971,7 @@
       try {
         const { data, error } = await window.supabaseClient.rpc('enviar_mensaje_cliente', {
           p_token: ACTIVE_TOKEN,
-          p_mensaje: msg
+          p_texto: msg
         });
         if (!error && data && data.ok) {
           input.value = '';
