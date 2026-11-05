@@ -837,6 +837,7 @@
       const rows = Array.isArray(messages) ? messages : [];
       let incMotivo = null;
       let incResuelta = false;
+      let incResType = 'solucionado';
       const incMsgs = [];
 
       rows.forEach(m => {
@@ -846,6 +847,9 @@
 
         if (sender === 'restaurante' && raw.startsWith('[INCIDENCIA_RESUELTA:')) {
           incResuelta = true;
+          const content = raw.replace('[INCIDENCIA_RESUELTA:', '').replace(']', '').trim();
+          const parts = content.split(':');
+          if (parts[1]) incResType = parts[1].trim();
           return;
         }
 
@@ -908,7 +912,18 @@
       }
 
       if (replyForm) replyForm.style.display = incResuelta ? 'none' : 'flex';
-      if (closedBanner) closedBanner.style.display = incResuelta ? 'block' : 'none';
+      if (closedBanner) {
+        closedBanner.style.display = incResuelta ? 'block' : 'none';
+        if (incResuelta) {
+          if (incResType === 'reenvio') {
+            closedBanner.textContent = '✓ Incidencia resuelta: El restaurante te ha enviado una comanda nueva de reposición (#incidencia).';
+          } else if (incResType === 'reembolso') {
+            closedBanner.textContent = '✓ Incidencia resuelta: El restaurante ha tramitado el reembolso de tu pedido.';
+          } else {
+            closedBanner.textContent = '✓ El restaurante ha cerrado y dado por resuelta esta incidencia.';
+          }
+        }
+      }
 
       listEl.innerHTML = incMsgs.map(m => {
         const isCliente = m.remitente === 'cliente';

@@ -611,6 +611,123 @@
     .btn-resolve-incident:hover {
       background: #15803d;
     }
+
+    /* Modal de resolución y cierre de incidencia */
+    .inc-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(4px);
+      z-index: 99999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .inc-modal-overlay.open {
+      display: flex;
+    }
+
+    .inc-modal-card {
+      background: #ffffff;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+      border: 1px solid #e2e8f0;
+      overflow: hidden;
+      animation: incPopIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes incPopIn {
+      from { transform: scale(0.92); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .inc-modal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .inc-modal-header h3 {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 900;
+      color: var(--text-main);
+    }
+
+    .inc-modal-body {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .inc-option-btn {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1.5px solid #e2e8f0;
+      background: #ffffff;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.16s ease;
+      font-family: inherit;
+      width: 100%;
+    }
+
+    .inc-option-btn:hover {
+      border-color: var(--brand-orange);
+      background: #fffaf5;
+      transform: translateY(-1px);
+    }
+
+    .inc-option-btn.opt-resend:hover {
+      border-color: #2563eb;
+      background: #eff6ff;
+    }
+
+    .inc-option-btn.opt-refund:hover {
+      border-color: #dc2626;
+      background: #fef2f2;
+    }
+
+    .inc-option-btn.opt-solved:hover {
+      border-color: #16a34a;
+      background: #f0fdf4;
+    }
+
+    .inc-option-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .inc-option-title {
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 2px;
+    }
+
+    .inc-option-desc {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -700,6 +817,54 @@
   </main>
 
   <div id="toast-container"></div>
+
+  <!-- Modal de Opciones al Cerrar Incidencia -->
+  <div class="inc-modal-overlay" id="resolve-incident-modal" onclick="if(event.target.id==='resolve-incident-modal') closeResolveIncidentModal()">
+    <div class="inc-modal-card">
+      <div class="inc-modal-header">
+        <h3 id="resolve-modal-title">Cerrar Incidencia</h3>
+        <button type="button" onclick="closeResolveIncidentModal()" style="background:none; border:none; cursor:pointer; padding:4px; color:#64748b; font-size:1.2rem; line-height:1;">&times;</button>
+      </div>
+      <div class="inc-modal-body">
+        <p style="margin:0; font-size:0.84rem; color:var(--text-muted);">
+          Selecciona cómo resolver esta incidencia con el cliente:
+        </p>
+
+        <!-- Opción 1: Enviar otra -->
+        <button type="button" class="inc-option-btn opt-resend" onclick="executeResolveAction('reenvio')">
+          <div class="inc-option-icon" style="background:#dbeafe; color:#2563eb;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+          </div>
+          <div>
+            <div class="inc-option-title">Enviar otra comanda</div>
+            <div class="inc-option-desc">Crea un nuevo pedido de reposición en cocina con el número <strong>#incidencia-XXX</strong>.</div>
+          </div>
+        </button>
+
+        <!-- Opción 2: Reembolso -->
+        <button type="button" class="inc-option-btn opt-refund" onclick="executeResolveAction('reembolso')">
+          <div class="inc-option-icon" style="background:#fee2e2; color:#dc2626;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+          </div>
+          <div>
+            <div class="inc-option-title">Reembolso al cliente</div>
+            <div class="inc-option-desc">Registra el reembolso del pedido y notifica al cliente que se ha tramitado la devolución.</div>
+          </div>
+        </button>
+
+        <!-- Opción 3: Ya está solucionado -->
+        <button type="button" class="inc-option-btn opt-solved" onclick="executeResolveAction('solucionado')">
+          <div class="inc-option-icon" style="background:#dcfce7; color:#16a34a;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </div>
+          <div>
+            <div class="inc-option-title">Ya está solucionado</div>
+            <div class="inc-option-desc">Cierra el ticket y finaliza el chat de la incidencia sin crear comanda extra.</div>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
 
   
   <script>
@@ -887,7 +1052,8 @@
               // Detectar incidencias resueltas marcadas por el restaurante
               chatRows.forEach(m => {
                 if (m.remitente === 'restaurante' && typeof m.texto === 'string' && m.texto.startsWith('[INCIDENCIA_RESUELTA:')) {
-                  const matchId = m.texto.replace('[INCIDENCIA_RESUELTA:', '').replace(']', '').trim();
+                  const content = m.texto.replace('[INCIDENCIA_RESUELTA:', '').replace(']', '').trim();
+                  const matchId = content.split(':')[0].trim();
                   if (matchId) RESOLVED_INCIDENT_IDS.add(matchId);
                 }
               });
@@ -904,10 +1070,14 @@
                     if (!raw) return;
 
                     if (m.remitente === 'restaurante' && raw.startsWith('[INCIDENCIA_RESUELTA:')) {
-                      const matchId = raw.replace('[INCIDENCIA_RESUELTA:', '').replace(']', '').trim();
+                      const content = raw.replace('[INCIDENCIA_RESUELTA:', '').replace(']', '').trim();
+                      const parts = content.split(':');
+                      const matchId = parts[0].trim();
+                      const resType = parts[1] ? parts[1].trim() : 'solucionado';
                       const target = incidencias.find(inc => inc.id === matchId) || activeInc;
                       if (target) {
                         target.resuelta = true;
+                        target.tipo_resolucion = resType;
                         RESOLVED_INCIDENT_IDS.add(target.id);
                         if (activeInc && activeInc.id === target.id) activeInc = null;
                       }
@@ -1102,12 +1272,169 @@
       if (btn) btn.disabled = false;
     }
 
-    async function resolveIncident(pedidoId, incidentId) {
+    let CURRENT_RESOLVE_TARGET = null;
+
+    function openResolveIncidentModal(pedidoId, incidentId) {
+      const order = ordersList.find(o => o.id === pedidoId);
+      const inc = order && Array.isArray(order.incidencias) ? order.incidencias.find(i => i.id === incidentId) : null;
+      CURRENT_RESOLVE_TARGET = { pedidoId, incidentId, order, inc };
+
+      const titleEl = document.getElementById('resolve-modal-title');
+      if (titleEl) {
+        titleEl.textContent = `Cerrar Incidencia #${order ? order.numero_comanda : ''}`;
+      }
+      const modal = document.getElementById('resolve-incident-modal');
+      if (modal) modal.classList.add('open');
+    }
+
+    function closeResolveIncidentModal() {
+      const modal = document.getElementById('resolve-incident-modal');
+      if (modal) modal.classList.remove('open');
+      CURRENT_RESOLVE_TARGET = null;
+    }
+
+    async function executeResolveAction(actionType) {
+      if (!CURRENT_RESOLVE_TARGET) return;
+      const { pedidoId, incidentId, order, inc } = CURRENT_RESOLVE_TARGET;
+      closeResolveIncidentModal();
+
+      if (actionType === 'reenvio') {
+        await handleResendOrder(order, inc);
+        await resolveIncident(pedidoId, incidentId, 'reenvio');
+      } else if (actionType === 'reembolso') {
+        await resolveIncident(pedidoId, incidentId, 'reembolso');
+      } else {
+        await resolveIncident(pedidoId, incidentId, 'solucionado');
+      }
+    }
+
+    async function handleResendOrder(originalOrder, inc) {
+      const parentNum = originalOrder ? originalOrder.numero_comanda : '101';
+      const newComandaNum = `incidencia-${parentNum}`;
+      const newOrderId = 'ped_inc_' + Date.now();
+      const newTrackingToken = 'trk_inc_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
+
+      const lines = (originalOrder && originalOrder.lineas && originalOrder.lineas.length > 0)
+        ? originalOrder.lineas
+        : [
+            {
+              id: 'lin_inc_default',
+              nombre_producto: `Reposición por incidencia (${(inc && inc.motivo) || 'Comanda completa'})`,
+              cantidad: 1,
+              precio_unitario_cents: 0,
+              total_linea_cents: 0,
+              extras: []
+            }
+          ];
+
+      const newOrder = {
+        id: newOrderId,
+        restaurante_id: REST_ID,
+        numero_comanda: newComandaNum,
+        tracking_token: newTrackingToken,
+        tipo_servicio: originalOrder ? originalOrder.tipo_servicio : 'delivery',
+        direccion_entrega: originalOrder ? originalOrder.direccion_entrega : '',
+        cliente_nombre: originalOrder ? originalOrder.cliente_nombre : 'Cliente',
+        cliente_telefono: originalOrder ? originalOrder.cliente_telefono : '',
+        notas_cliente: `[REPOSICIÓN POR INCIDENCIA #${parentNum}] Motivo: ${(inc && inc.motivo) || 'Incidencia'}`,
+        subtotal_cents: 0,
+        gastos_envio_cents: 0,
+        total_cents: 0,
+        subtotal_formatted: '0,00 €',
+        gastos_envio_formatted: '0,00 €',
+        total_formatted: '0,00 €',
+        metodo_pago: originalOrder ? originalOrder.metodo_pago : 'tarjeta',
+        estado_pago: 'completado',
+        estado: 'cocina',
+        created_at: new Date().toISOString(),
+        lineas: lines,
+        incidencias: [],
+        incidenciasPendientes: []
+      };
+
+      // Guardar en ordersList y cambiar a pestaña de comandas en curso
+      ordersList.unshift(newOrder);
+      switchControlTab('activas');
+
+      // Guardar en localStorage del restaurante/cliente para sincronización
+      try {
+        let local = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
+        local.unshift(newOrder);
+        localStorage.setItem('fogon_orders', JSON.stringify(local.slice(0, 100)));
+      } catch (_) {}
+
+      // Guardar en Supabase si está disponible
+      if (window.supabaseClient) {
+        try {
+          await window.supabaseClient.from('pedidos').insert({
+            id: newOrderId,
+            restaurante_id: REST_ID,
+            numero_comanda: newComandaNum,
+            tracking_token: newTrackingToken,
+            tipo_servicio: newOrder.tipo_servicio,
+            direccion_entrega: newOrder.direccion_entrega,
+            cliente_nombre: newOrder.cliente_nombre,
+            cliente_telefono: newOrder.cliente_telefono,
+            notas_cliente: newOrder.notas_cliente,
+            subtotal_cents: 0,
+            gastos_envio_cents: 0,
+            total_cents: 0,
+            metodo_pago: newOrder.metodo_pago,
+            estado_pago: 'completado',
+            estado: 'cocina',
+            created_at: newOrder.created_at
+          });
+
+          if (lines && lines.length > 0) {
+            const lineRows = lines.map((l, idx) => ({
+              id: `lin_${newOrderId}_${idx + 1}`,
+              pedido_id: newOrderId,
+              restaurante_id: REST_ID,
+              producto_id: l.producto_id || 'prod_inc',
+              nombre_producto: l.nombre_producto,
+              precio_unitario_cents: 0,
+              cantidad: l.cantidad || 1,
+              total_linea_cents: 0,
+              extras_json: l.extras || []
+            }));
+            await window.supabaseClient.from('lineas_de_pedido').insert(lineRows);
+          }
+        } catch (e) {
+          console.warn('Error guardando pedido de reposición en Supabase:', e);
+        }
+      }
+
+      showToast(`Creada comanda de reposición #${newComandaNum} en cocina`, 'success');
+    }
+
+    async function resolveIncident(pedidoId, incidentId, resolutionType = 'solucionado') {
       markIncidentResolvedLocal(incidentId);
+
+      let resolutionLabel = 'solucionado';
+      let clientNotification = 'El restaurante ha dado por resuelta la incidencia.';
+      if (resolutionType === 'reenvio') {
+        resolutionLabel = 'reenvio';
+        const ord = ordersList.find(o => o.id === pedidoId);
+        clientNotification = `El restaurante ha resuelto la incidencia enviándote una nueva comanda (#incidencia-${ord ? ord.numero_comanda : ''}). Ya está en cocina.`;
+      } else if (resolutionType === 'reembolso') {
+        resolutionLabel = 'reembolso';
+        clientNotification = 'El restaurante ha resuelto la incidencia tramitando el reembolso del pedido.';
+      }
+
       ordersList.forEach(o => {
         if (o.id === pedidoId && Array.isArray(o.incidencias)) {
           o.incidencias.forEach(inc => {
-            if (inc.id === incidentId) inc.resuelta = true;
+            if (inc.id === incidentId) {
+              inc.resuelta = true;
+              inc.tipo_resolucion = resolutionLabel;
+              if (!Array.isArray(inc.mensajes)) inc.mensajes = [];
+              inc.mensajes.push({
+                id: 'msg_res_notif_' + Date.now(),
+                remitente: 'restaurante',
+                texto: clientNotification,
+                created_at: new Date().toISOString()
+              });
+            }
           });
           o.incidenciasPendientes = o.incidencias.filter(i => !i.resuelta);
         }
@@ -1121,13 +1448,21 @@
             pedido_id: pedidoId,
             restaurante_id: REST_ID,
             remitente: 'restaurante',
-            texto: `[INCIDENCIA_RESUELTA:${incidentId}]`
+            texto: `[INCIDENCIA_RESUELTA:${incidentId}:${resolutionLabel}]`
+          });
+
+          await window.supabaseClient.from('mensajes_chat').insert({
+            id: 'msg_res_text_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+            pedido_id: pedidoId,
+            restaurante_id: REST_ID,
+            remitente: 'restaurante',
+            texto: '[INC_MSG] ' + clientNotification
           });
         } catch (e) {
           console.warn('Error guardando resolución de incidencia:', e);
         }
       }
-      showToast('Incidencia cerrada y marcada como resuelta', 'success');
+      showToast('Incidencia cerrada correctamente', 'success');
     }
 
     function renderOrders() {
@@ -1247,7 +1582,7 @@
                       <strong style="color:${inc.resuelta ? '#15803d' : '#991b1b'}; font-size:0.82rem;">Motivo: ${escapeHtml(inc.motivo)}</strong>
                       ${inc.resuelta
                         ? `<span style="font-size:0.73rem; font-weight:800; color:#15803d; background:#dcfce7; padding:3px 8px; border-radius:999px;">✓ Incidencia cerrada</span>`
-                        : `<button type="button" class="btn-resolve-incident" onclick="resolveIncident('${order.id}', '${inc.id}')">✓ Cerrar incidencia</button>`
+                        : `<button type="button" class="btn-resolve-incident" onclick="openResolveIncidentModal('${order.id}', '${inc.id}')">✓ Cerrar incidencia</button>`
                       }
                     </div>
                     <div class="incident-chat-messages" id="inc-chat-box-${inc.id}">
