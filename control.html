@@ -644,10 +644,6 @@
           Conexión en vivo
         </span>
         <span id="user-profile-badge" class="role-badge" style="display:none; background:#f1f5f9; color:#475569; border-color:#cbd5e1;"></span>
-        <button id="btn-reset-demo" onclick="resetDemoData()" class="btn btn-secondary btn-sm" style="display:none; align-items:center; gap:5px; font-size:0.75rem;" title="Restablecer comanda y carta del demo">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
-          <span>Restablecer Demo</span>
-        </button>
         <a href="demo.html" target="_blank" class="btn btn-secondary btn-sm" style="display:inline-flex; align-items:center; gap:6px;">
           <span>Ver Carta</span>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
@@ -787,11 +783,6 @@
             if (userBadge) {
               userBadge.textContent = (perfil.nombre || perfil.rol) + ' (' + (perfil.rol === 'superadmin' ? 'Superadmin' : 'Dueño') + ')';
               userBadge.style.display = 'inline-flex';
-            }
-
-            if (perfil.rol === 'superadmin' || REST_ID === 'rest_demo') {
-              const btnReset = document.getElementById('btn-reset-demo');
-              if (btnReset) btnReset.style.display = 'inline-flex';
             }
           }
         } catch (e) {
