@@ -2082,11 +2082,14 @@
       try {
         const raw = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
         if (Array.isArray(raw)) {
-          orders = raw.filter(o => o && o.id !== 'ped_demo_initial' && o.id !== 'ped_07be7a128b85439aa2222e2155ac5a46');
+          orders = raw.filter(o => o && o.id !== 'ped_demo_initial' && o.id !== 'ped_07be7a128b85439aa2222e2155ac5a46' && !String(o.id || '').startsWith('ped_inc_'));
         }
       } catch (_) {}
 
       if (orders.length === 0) {
+        try {
+          localStorage.removeItem('fogon_orders');
+        } catch (_) {}
         checkActiveOrderButton();
         return orders;
       }
@@ -2094,12 +2097,6 @@
       const validOrders = [];
       await Promise.all(orders.map(async (o) => {
         if (!o.tracking_token) return;
-
-        // Comandas de reposición por incidencia (#incidencia-XXX / ped_inc_ / trk_inc_): conservar siempre
-        if (o.id && (o.id.startsWith('ped_inc_') || String(o.numero_comanda).startsWith('incidencia') || (o.tracking_token && o.tracking_token.startsWith('trk_inc_')))) {
-          validOrders.push(o);
-          return;
-        }
 
         if (!window.supabaseClient) {
           validOrders.push(o);
@@ -2113,6 +2110,13 @@
           if (!rpcErr && rpcOrder) {
             if (rpcOrder.ok) {
               o.estado = rpcOrder.estado || o.estado;
+              const rawName = String(rpcOrder.cliente_nombre || o.cliente_nombre || '');
+              if (/\[INCIDENCIA-[^\]]+\]/i.test(rawName) || String(o.numero_comanda || '').startsWith('incidencia')) {
+                o.es_incidencia = true;
+                o.numero_comanda = `incidencia-${String(rpcOrder.numero_comanda || o.numero_comanda).replace(/^incidencia-/i, '')}`;
+                o.cliente_nombre = rawName.replace(/\s*\[INCIDENCIA-[^\]]+\]/gi, '').trim() || 'Cliente';
+                o.total_formatted = '0,00 €';
+              }
               validOrders.push(o);
             }
             // Si rpcOrder.ok === false, el pedido fue eliminado de la base de datos y se descarta de localStorage
@@ -2124,10 +2128,10 @@
         }
       }));
 
-      // Si hay comanda previa con incidencia resuelta mediante reenvío, recuperarla si aún no está en local
+      // Si hay comanda previa con incidencia resuelta mediante reenvío, recuperarla si aún no está en local y sigue viva en Supabase
       if (window.supabaseClient) {
-        for (const ord of validOrders) {
-          if (ord.tracking_token && !validOrders.some(x => x.id && x.id.startsWith('ped_inc_') && String(x.numero_comanda).includes(String(ord.numero_comanda)))) {
+        for (const ord of [...validOrders]) {
+          if (ord.tracking_token && !ord.es_incidencia) {
             try {
               const { data: chatData } = await window.supabaseClient.rpc('obtener_mensajes_chat_cliente', {
                 p_token: ord.tracking_token
@@ -2147,8 +2151,20 @@
                     if (parts[2]) {
                       try {
                         const extra = JSON.parse(decodeURIComponent(parts.slice(2).join(':')));
-                        if (extra && extra.id && !validOrders.some(v => v.id === extra.id)) {
-                          validOrders.unshift(extra);
+                        if (extra && extra.id && !String(extra.id).startsWith('ped_inc_') && !validOrders.some(v => v.id === extra.id)) {
+                          // Verificar en Supabase que la comanda de reposición existe y obtener su estado en tiempo real
+                          if (extra.tracking_token) {
+                            const { data: rpcCheck } = await window.supabaseClient.rpc('obtener_pedido_por_token', {
+                              p_token: extra.tracking_token
+                            });
+                            if (rpcCheck && rpcCheck.ok) {
+                              extra.estado = rpcCheck.estado || extra.estado;
+                              extra.es_incidencia = true;
+                              extra.numero_comanda = `incidencia-${String(rpcCheck.numero_comanda || extra.numero_comanda).replace(/^incidencia-/i, '')}`;
+                              extra.total_formatted = '0,00 €';
+                              validOrders.unshift(extra);
+                            }
+                          }
                         }
                       } catch (_) {}
                     }
@@ -2166,18 +2182,6 @@
         }
       }
 
-      // Si el pedido original de una comanda de reposición ya no existe (fue borrado), descartar también la reposición
-      for (let i = validOrders.length - 1; i >= 0; i--) {
-        const item = validOrders[i];
-        if (item && item.id && item.id.startsWith('ped_inc_')) {
-          const parentNum = String(item.numero_comanda || '').replace('incidencia-', '').trim();
-          const parentExists = validOrders.some(v => String(v.numero_comanda) === parentNum || (item.parentOrderId && v.id === item.parentOrderId));
-          if (!parentExists) {
-            validOrders.splice(i, 1);
-          }
-        }
-      }
-
       validOrders.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
       try {
         if (validOrders.length === 0) {
@@ -2188,6 +2192,10 @@
       } catch (_) {}
 
       checkActiveOrderButton();
+      const pastModal = document.getElementById('past-orders-modal');
+      if (pastModal && pastModal.classList.contains('open')) {
+        renderPastOrdersList(validOrders);
+      }
       return validOrders;
     }
 
@@ -2202,8 +2210,8 @@
       });
 
       setInterval(() => {
-        checkActiveOrderButton();
-      }, 3000);
+        syncLocalOrdersWithSupabase();
+      }, 4000);
     });
 
     async function openPastOrdersModal() {
@@ -2349,13 +2357,19 @@
             if (parts[2]) {
               try {
                 const resendPayload = JSON.parse(decodeURIComponent(parts.slice(2).join(':')));
-                if (resendPayload && resendPayload.id) {
+                if (resendPayload && resendPayload.id && !String(resendPayload.id).startsWith('ped_inc_')) {
                   let local = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
-                  local = local.filter(o => o.id !== resendPayload.id);
-                  local.unshift(resendPayload);
-                  localStorage.setItem('fogon_orders', JSON.stringify(local.slice(0, 100)));
+                  local = local.filter(o => o && !String(o.id || '').startsWith('ped_inc_'));
+                  const existingIdx = local.findIndex(o => o.id === resendPayload.id || (resendPayload.tracking_token && o.tracking_token === resendPayload.tracking_token));
+                  if (existingIdx === -1) {
+                    local.unshift(resendPayload);
+                    localStorage.setItem('fogon_orders', JSON.stringify(local.slice(0, 100)));
+                    checkActiveOrderButton();
+                    if (typeof syncLocalOrdersWithSupabase === 'function') syncLocalOrdersWithSupabase();
+                  } else {
+                    resendPayload.estado = local[existingIdx].estado || resendPayload.estado;
+                  }
                   activeModalResendOrder = resendPayload;
-                  checkActiveOrderButton();
                 }
               } catch (_) {}
             }
@@ -2459,7 +2473,7 @@
               if (!resend) {
                 try {
                   const local = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
-                  resend = local.find(o => o.id && o.id.startsWith('ped_inc_'));
+                  resend = local.find(o => o && (o.es_incidencia || String(o.numero_comanda || '').startsWith('incidencia')));
                 } catch (_) {}
               }
               const num = (resend && resend.numero_comanda) ? '#' + resend.numero_comanda : '#incidencia';

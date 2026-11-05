@@ -683,19 +683,24 @@
         if (deliveredIncBox) deliveredIncBox.style.display = 'none';
       }
 
-      // Sincronizar estado en fogon_orders local
+      // Sincronizar estado y datos en fogon_orders local
       try {
-        const local = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
-        let updated = false;
-        local.forEach(lo => {
-          if ((order.id && lo.id === order.id) || (ACTIVE_TOKEN && lo.tracking_token === ACTIVE_TOKEN)) {
-            if (lo.estado !== estado) {
-              lo.estado = estado;
-              updated = true;
-            }
-          }
-        });
-        if (updated) localStorage.setItem('fogon_orders', JSON.stringify(local));
+        let local = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
+        local = local.filter(lo => lo && !String(lo.id || '').startsWith('ped_inc_'));
+        const foundIdx = local.findIndex(lo => (order.id && lo.id === order.id) || (ACTIVE_TOKEN && lo.tracking_token === ACTIVE_TOKEN));
+        if (foundIdx !== -1) {
+          local[foundIdx] = {
+            ...local[foundIdx],
+            ...order,
+            estado
+          };
+        } else if (order.id && order.tracking_token && ACTIVE_TOKEN !== 'trk_demo_sample_1') {
+          local.unshift({
+            ...order,
+            estado
+          });
+        }
+        localStorage.setItem('fogon_orders', JSON.stringify(local.slice(0, 100)));
       } catch (_) {}
 
       window.CURRENT_TRACKED_ORDER = order;
@@ -816,11 +821,22 @@
           if (!error && data) {
             if (data.ok) {
               const p = data.pedido || data;
+              const rawName = String(p.cliente_nombre || '');
+              const isInc = /\[INCIDENCIA-[^\]]+\]/i.test(rawName);
+              const cleanName = rawName.replace(/\s*\[INCIDENCIA-[^\]]+\]/gi, '').trim() || 'Cliente';
+              const displayNum = isInc ? `incidencia-${String(p.numero_comanda).replace(/^incidencia-/i, '')}` : p.numero_comanda;
+
               updateTrackingUI({
                 ...p,
-                subtotal_formatted: ((p.subtotal_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €',
-                gastos_envio_formatted: ((p.gastos_envio_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €',
-                total_formatted: ((p.total_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €',
+                es_incidencia: isInc,
+                numero_comanda: displayNum,
+                cliente_nombre: cleanName,
+                subtotal_cents: isInc ? 0 : p.subtotal_cents,
+                gastos_envio_cents: isInc ? 0 : p.gastos_envio_cents,
+                total_cents: isInc ? 0 : p.total_cents,
+                subtotal_formatted: isInc ? '0,00 €' : (((p.subtotal_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €'),
+                gastos_envio_formatted: isInc ? '0,00 €' : (((p.gastos_envio_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €'),
+                total_formatted: isInc ? '0,00 €' : (((p.total_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €'),
                 lineas: (p.lineas || []).map(l => ({
                   ...l,
                   extras: Array.isArray(l.extras) ? l.extras : (typeof l.extras_json === 'string' ? JSON.parse(l.extras_json) : (l.extras_json || []))
@@ -911,10 +927,13 @@
               const resendPayload = JSON.parse(decodeURIComponent(parts.slice(2).join(':')));
               if (resendPayload && resendPayload.id) {
                 let local = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
-                local = local.filter(o => o.id !== resendPayload.id);
-                local.unshift(resendPayload);
-                localStorage.setItem('fogon_orders', JSON.stringify(local.slice(0, 100)));
-                activeResendOrder = resendPayload;
+                local = local.filter(o => o && !String(o.id || '').startsWith('ped_inc_'));
+                const existing = local.find(o => o && o.id === resendPayload.id);
+                if (!existing) {
+                  local.unshift(resendPayload);
+                  localStorage.setItem('fogon_orders', JSON.stringify(local.slice(0, 100)));
+                }
+                activeResendOrder = existing || resendPayload;
               }
             } catch (_) {}
           }
@@ -1015,7 +1034,7 @@
             if (!resend) {
               try {
                 const local = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
-                resend = local.find(o => o.id && o.id.startsWith('ped_inc_'));
+                resend = local.find(o => o && (o.es_incidencia || String(o.numero_comanda || '').startsWith('incidencia')));
               } catch (_) {}
             }
             const num = (resend && resend.numero_comanda) ? '#' + resend.numero_comanda : '#incidencia';

@@ -1135,12 +1135,23 @@
                     }
                   });
 
+                  const rawName = String(o.cliente_nombre || '');
+                  const isInc = /\[INCIDENCIA-[^\]]+\]/i.test(rawName) || /^\[REPOSICIÓN POR INCIDENCIA/i.test(String(o.notas_cliente || ''));
+                  const cleanName = rawName.replace(/\s*\[INCIDENCIA-[^\]]+\]/gi, '').trim() || 'Cliente';
+                  const displayNum = isInc ? `incidencia-${String(o.numero_comanda).replace(/^incidencia-/i, '')}` : o.numero_comanda;
+
                   return {
                     ...o,
+                    es_incidencia: isInc,
+                    numero_comanda: displayNum,
+                    cliente_nombre: cleanName,
                     estado: PENDING_STATUS.has(o.id) ? PENDING_STATUS.get(o.id) : o.estado,
-                    subtotal_formatted: ((o.subtotal_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €',
-                    gastos_envio_formatted: ((o.gastos_envio_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €',
-                    total_formatted: ((o.total_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €',
+                    subtotal_cents: isInc ? 0 : o.subtotal_cents,
+                    gastos_envio_cents: isInc ? 0 : o.gastos_envio_cents,
+                    total_cents: isInc ? 0 : o.total_cents,
+                    subtotal_formatted: isInc ? '0,00 €' : (((o.subtotal_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €'),
+                    gastos_envio_formatted: isInc ? '0,00 €' : (((o.gastos_envio_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €'),
+                    total_formatted: isInc ? '0,00 €' : (((o.total_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €'),
                     incidencias,
                     lineas: (o.lineas_de_pedido || []).map(l => ({
                       ...l,
@@ -1161,7 +1172,9 @@
           const stored = localStorage.getItem('fogon_orders');
           if (stored) {
             const parsed = JSON.parse(stored);
-            localOrders = (Array.isArray(parsed) ? parsed : []).filter(o => !FAKE_ORDER_IDS.has(o.id) && !DELETED_ORDER_IDS.has(o.id));
+            localOrders = (Array.isArray(parsed) ? parsed : []).filter(
+              o => o && !FAKE_ORDER_IDS.has(o.id) && !DELETED_ORDER_IDS.has(o.id) && !String(o.id || '').startsWith('ped_inc_')
+            );
             if (localOrders.length !== parsed.length) {
               localStorage.setItem('fogon_orders', JSON.stringify(localOrders));
             }
@@ -1178,9 +1191,11 @@
 
         const map = new Map();
         supaOrders.forEach(o => map.set(o.id, o));
-        localOrders.forEach(o => {
-          if (!map.has(o.id)) map.set(o.id, { ...o, incidencias: o.incidencias || [] });
-        });
+        if (!supaSuccess) {
+          localOrders.forEach(o => {
+            if (!map.has(o.id)) map.set(o.id, { ...o, incidencias: o.incidencias || [] });
+          });
+        }
 
         ordersList = Array.from(map.values()).map(o => {
           const existingIncs = Array.isArray(o.incidencias) ? [...o.incidencias] : [];
@@ -1308,34 +1323,118 @@
     }
 
     async function handleResendOrder(originalOrder, inc) {
-      const parentNum = originalOrder ? originalOrder.numero_comanda : '101';
-      const newComandaNum = `incidencia-${parentNum}`;
-      const newOrderId = 'ped_inc_' + Date.now();
-      const newTrackingToken = 'trk_inc_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
+      const parentNum = originalOrder ? String(originalOrder.numero_comanda).replace(/^incidencia-/i, '') : '101';
+      const baseClientName = ((originalOrder && originalOrder.cliente_nombre) || 'Cliente')
+        .replace(/\s*\[INCIDENCIA-[^\]]+\]/gi, '')
+        .trim() || 'Cliente';
+      const taggedClientName = `${baseClientName} [INCIDENCIA-${parentNum}]`;
+      const notas = `[REPOSICIÓN POR INCIDENCIA #${parentNum}] Motivo: ${(inc && inc.motivo) || 'Incidencia'}`;
 
       const lines = (originalOrder && originalOrder.lineas && originalOrder.lineas.length > 0)
         ? originalOrder.lineas
         : [
             {
               id: 'lin_inc_default',
+              producto_id: 'prod_b3',
               nombre_producto: `Reposición por incidencia (${(inc && inc.motivo) || 'Comanda completa'})`,
-              cantidad: 1,
+              cantidad: 2,
               precio_unitario_cents: 0,
               total_linea_cents: 0,
               extras: []
             }
           ];
 
+      let realOrderId = 'ped_inc_' + Date.now();
+      let realTrackingToken = 'trk_inc_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
+      let realComandaNum = `incidencia-${parentNum}`;
+
+      // Crear el pedido como fila REAL en Supabase (tabla pedidos) mediante el RPC crear_pedido
+      // para que todos los estados (cocina, listo, entregado) y el seguimiento funcionen en tiempo real
+      if (window.supabaseClient) {
+        try {
+          let rpcLines = lines
+            .filter(l => l && l.producto_id)
+            .map(l => {
+              const rawExtras = Array.isArray(l.extras) ? l.extras : (Array.isArray(l.extras_json) ? l.extras_json : []);
+              const optIds = rawExtras.map(ex => ex && ex.id).filter(Boolean);
+              return {
+                producto_id: l.producto_id,
+                cantidad: Math.max(1, parseInt(l.cantidad, 10) || 1),
+                opciones_ids: [...new Set(optIds)]
+              };
+            });
+
+          if (rpcLines.length === 0) {
+            rpcLines = [{ producto_id: 'prod_b3', cantidad: 2, opciones_ids: [] }];
+          }
+
+          const uniquePhone = '600' + Math.floor(100000 + Math.random() * 900000);
+          let { data: created, error: createErr } = await window.supabaseClient.rpc('crear_pedido', {
+            p_restaurante_id: REST_ID,
+            p_tipo_servicio: (originalOrder && originalOrder.tipo_servicio) || 'delivery',
+            p_cliente_nombre: taggedClientName,
+            p_cliente_telefono: uniquePhone,
+            p_cliente_email: null,
+            p_direccion_entrega: (originalOrder && originalOrder.direccion_entrega) || 'En el local',
+            p_notas_cliente: notas,
+            p_metodo_pago: (originalOrder && ['tarjeta', 'bizum', 'efectivo'].includes(originalOrder.metodo_pago)) ? originalOrder.metodo_pago : 'tarjeta',
+            p_idempotency_key: 'idemp_inc_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+            p_lineas: rpcLines
+          });
+
+          if (createErr || !created || !created.ok) {
+            // Fallback seguro si algún plato u opción tenía restricción
+            const retryRes = await window.supabaseClient.rpc('crear_pedido', {
+              p_restaurante_id: REST_ID,
+              p_tipo_servicio: 'recogida',
+              p_cliente_nombre: taggedClientName,
+              p_cliente_telefono: uniquePhone,
+              p_cliente_email: null,
+              p_direccion_entrega: (originalOrder && originalOrder.direccion_entrega) || 'En el local',
+              p_notas_cliente: notas,
+              p_metodo_pago: 'tarjeta',
+              p_idempotency_key: 'idemp_inc_fb_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+              p_lineas: [{ producto_id: 'prod_b3', cantidad: 2, opciones_ids: [] }]
+            });
+            created = retryRes.data;
+          }
+
+          if (created && created.ok) {
+            realOrderId = created.pedido_id;
+            realTrackingToken = created.tracking_token;
+            realComandaNum = `incidencia-${created.numero_comanda}`;
+
+            try {
+              await window.supabaseClient.rpc('confirmar_pago_simulado_demo', {
+                p_tracking_token: realTrackingToken
+              });
+            } catch (_) {}
+
+            PENDING_STATUS.set(realOrderId, 'cocina');
+            try {
+              await window.supabaseClient
+                .from('pedidos')
+                .update({ estado: 'cocina' })
+                .eq('id', realOrderId);
+            } catch (_) {}
+          }
+        } catch (err) {
+          console.warn('Error creando comanda de reposición en Supabase:', err);
+        }
+      }
+
       const newOrder = {
-        id: newOrderId,
+        id: realOrderId,
+        parentOrderId: originalOrder ? originalOrder.id : null,
         restaurante_id: REST_ID,
-        numero_comanda: newComandaNum,
-        tracking_token: newTrackingToken,
+        es_incidencia: true,
+        numero_comanda: realComandaNum,
+        tracking_token: realTrackingToken,
         tipo_servicio: originalOrder ? originalOrder.tipo_servicio : 'delivery',
         direccion_entrega: originalOrder ? originalOrder.direccion_entrega : '',
-        cliente_nombre: originalOrder ? originalOrder.cliente_nombre : 'Cliente',
+        cliente_nombre: baseClientName,
         cliente_telefono: originalOrder ? originalOrder.cliente_telefono : '',
-        notas_cliente: `[REPOSICIÓN POR INCIDENCIA #${parentNum}] Motivo: ${(inc && inc.motivo) || 'Incidencia'}`,
+        notas_cliente: notas,
         subtotal_cents: 0,
         gastos_envio_cents: 0,
         total_cents: 0,
@@ -1354,19 +1453,19 @@
       // 1. Guardar en localStorage de comandas
       try {
         let local = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
-        local = local.filter(o => o.id !== newOrderId);
+        local = local.filter(o => o && o.id !== realOrderId && !String(o.id || '').startsWith('ped_inc_'));
         local.unshift(newOrder);
         localStorage.setItem('fogon_orders', JSON.stringify(local.slice(0, 100)));
       } catch (_) {}
 
       // 2. Guardar en la lista en memoria y cambiar pestaña inmediatamente
-      ordersList = ordersList.filter(o => o.id !== newOrderId);
+      ordersList = ordersList.filter(o => o.id !== realOrderId);
       ordersList.unshift(newOrder);
       switchControlTab('activas');
 
       // 3. Notificar y actualizar interfaz de inmediato
       renderOrders();
-      showToast(`Creada comanda de reposición #${newComandaNum} en cocina`, 'success');
+      showToast(`Creada comanda de reposición #${realComandaNum} en cocina`, 'success');
       return newOrder;
     }
 
@@ -1384,7 +1483,23 @@
         clientNotification = `El restaurante ha resuelto la incidencia enviándote una nueva comanda (#${numStr}). Ya está en cocina.`;
         if (extraOrder) {
           try {
-            extraPayload = ':' + encodeURIComponent(JSON.stringify(extraOrder));
+            const compactOrder = {
+              id: extraOrder.id,
+              restaurante_id: REST_ID,
+              numero_comanda: extraOrder.numero_comanda,
+              tracking_token: extraOrder.tracking_token,
+              tipo_servicio: extraOrder.tipo_servicio,
+              direccion_entrega: extraOrder.direccion_entrega,
+              cliente_nombre: extraOrder.cliente_nombre,
+              estado: 'cocina',
+              created_at: extraOrder.created_at,
+              total_formatted: '0,00 €',
+              lineas: (extraOrder.lineas || []).map(l => ({
+                cantidad: l.cantidad || 1,
+                nombre_producto: l.nombre_producto || 'Reposición'
+              }))
+            };
+            extraPayload = ':' + encodeURIComponent(JSON.stringify(compactOrder));
           } catch (_) {}
         }
       } else if (resolutionType === 'reembolso') {
