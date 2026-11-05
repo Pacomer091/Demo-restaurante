@@ -487,6 +487,18 @@
     // Sin comandas falsas por defecto: solo pedidos reales
     const INITIAL_DEMO_ORDERS = [];
     const FAKE_ORDER_IDS = new Set(['ord_demo_sample_1', 'ord_demo_sample_2', 'ped_demo_initial']);
+    let DELETED_ORDER_IDS = new Set();
+    try {
+      const savedDel = JSON.parse(localStorage.getItem('fogon_deleted_orders') || '[]');
+      if (Array.isArray(savedDel)) savedDel.forEach(id => DELETED_ORDER_IDS.add(id));
+    } catch (_) {}
+    function markOrderDeleted(id) {
+      DELETED_ORDER_IDS.add(id);
+      try {
+        localStorage.setItem('fogon_deleted_orders', JSON.stringify(Array.from(DELETED_ORDER_IDS)));
+      } catch (_) {}
+    }
+    const PENDING_STATUS = new Map();
 
     // Guarda de sesión y comprobación de rol
     async function checkAuthAndInit() {
@@ -604,9 +616,10 @@
             if (!error && Array.isArray(data)) {
               supaSuccess = true;
               supaOrders = data
-                .filter(o => !FAKE_ORDER_IDS.has(o.id))
+                .filter(o => !FAKE_ORDER_IDS.has(o.id) && !DELETED_ORDER_IDS.has(o.id))
                 .map(o => ({
                   ...o,
+                  estado: PENDING_STATUS.has(o.id) ? PENDING_STATUS.get(o.id) : o.estado,
                   subtotal_formatted: ((o.subtotal_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €',
                   gastos_envio_formatted: ((o.gastos_envio_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €',
                   total_formatted: ((o.total_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €',
@@ -628,7 +641,7 @@
           const stored = localStorage.getItem('fogon_orders');
           if (stored) {
             const parsed = JSON.parse(stored);
-            localOrders = (Array.isArray(parsed) ? parsed : []).filter(o => !FAKE_ORDER_IDS.has(o.id));
+            localOrders = (Array.isArray(parsed) ? parsed : []).filter(o => !FAKE_ORDER_IDS.has(o.id) && !DELETED_ORDER_IDS.has(o.id));
             if (localOrders.length !== parsed.length) {
               localStorage.setItem('fogon_orders', JSON.stringify(localOrders));
             }
@@ -766,6 +779,7 @@
                        window.location.pathname.endsWith('.html');
 
       if (isStatic || !window.location.port) {
+        PENDING_STATUS.set(orderId, nuevoEstado);
         const ord = ordersList.find(o => o.id === orderId);
         if (ord) ord.estado = nuevoEstado;
         renderOrders();
@@ -781,8 +795,16 @@
 
         if (window.supabaseClient) {
           try {
-            await window.supabaseClient.from('pedidos').update({ estado: nuevoEstado }).eq('id', orderId);
-          } catch (_) {}
+            const { error } = await window.supabaseClient
+              .from('pedidos')
+              .update({ estado: nuevoEstado })
+              .eq('id', orderId);
+            if (error) console.warn('Error actualizando estado en Supabase:', error);
+          } catch (e) {
+            console.warn('Excepción actualizando estado:', e);
+          } finally {
+            setTimeout(() => PENDING_STATUS.delete(orderId), 5000);
+          }
         }
 
         showToast(`Comanda #${ord ? ord.numero_comanda : ''} actualizada a '${nuevoEstado}'.`);
@@ -816,6 +838,7 @@
                        window.location.pathname.endsWith('.html');
 
       if (isStatic || !window.location.port) {
+        markOrderDeleted(orderId);
         ordersList = ordersList.filter(o => o.id !== orderId);
         renderOrders();
 
@@ -829,7 +852,9 @@
           try {
             await window.supabaseClient.from('lineas_de_pedido').delete().eq('pedido_id', orderId);
             await window.supabaseClient.from('pedidos').delete().eq('id', orderId);
-          } catch (_) {}
+          } catch (e) {
+            console.warn('Error borrando comanda en Supabase:', e);
+          }
         }
 
         showToast(`Comanda #${orderNum} borrada correctamente`);
@@ -851,7 +876,8 @@
     }
 
     async function confirmClearCompleted() {
-      const completedCount = ordersList.filter(o => o.estado === 'entregado' || o.estado === 'cancelado').length;
+      const completedOrders = ordersList.filter(o => o.estado === 'entregado' || o.estado === 'cancelado');
+      const completedCount = completedOrders.length;
       if (completedCount === 0) {
         showToast('No hay comandas entregadas o canceladas para limpiar.', 'info');
         return;
@@ -866,6 +892,8 @@
                        window.location.pathname.endsWith('.html');
 
       if (isStatic || !window.location.port) {
+        const completedIds = completedOrders.map(o => o.id);
+        completedIds.forEach(id => markOrderDeleted(id));
         ordersList = ordersList.filter(o => o.estado !== 'entregado' && o.estado !== 'cancelado');
         renderOrders();
 
@@ -877,6 +905,9 @@
 
         if (window.supabaseClient) {
           try {
+            if (completedIds.length > 0) {
+              await window.supabaseClient.from('lineas_de_pedido').delete().in('pedido_id', completedIds);
+            }
             await window.supabaseClient.from('pedidos').delete().in('estado', ['entregado', 'cancelado']).eq('restaurante_id', REST_ID);
           } catch (_) {}
         }
@@ -914,6 +945,7 @@
                        window.location.pathname.endsWith('.html');
 
       if (isStatic || !window.location.port) {
+        ordersList.forEach(o => markOrderDeleted(o.id));
         ordersList = [];
         renderOrders();
         try {
@@ -924,6 +956,9 @@
           try {
             await window.supabaseClient.from('lineas_de_pedido').delete().eq('restaurante_id', REST_ID);
             await window.supabaseClient.from('pedidos').delete().eq('restaurante_id', REST_ID);
+            if (REST_ID === 'rest_demo') {
+              await window.supabaseClient.rpc('restablecer_datos_demo');
+            }
           } catch (_) {}
         }
 

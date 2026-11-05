@@ -401,8 +401,8 @@
     <div class="tracking-card">
       <div class="tracking-header">
         <div>
-          <h1 class="order-title" id="display-order-num">Comanda #108</h1>
-          <span class="order-timestamp" id="display-timestamp">Registrada recientemente</span>
+          <h1 class="order-title" id="display-order-num">Cargando comanda...</h1>
+          <span class="order-timestamp" id="display-timestamp">Conectando en vivo</span>
         </div>
         <div class="live-pulse-badge">
           <span class="pulse-dot"></span>
@@ -448,10 +448,10 @@
 
       <!-- Información del Servicio -->
       <div class="service-info-card">
-        <div><strong>Tipo de pedido:</strong> <span id="display-tipo-servicio">Entrega a domicilio</span></div>
-        <div id="display-direccion-row" style="margin-top:4px;"><strong>Dirección de entrega:</strong> <span id="display-direccion">Calle Serrano 42, 2º A</span></div>
-        <div style="margin-top:4px;"><strong>Cliente:</strong> <span id="display-cliente">Laura Gómez</span> (<span id="display-telefono">612 345 678</span>)</div>
-        <div id="display-notas-row" style="margin-top:4px; color:#0369a1;"><strong>Notas:</strong> <span id="display-notas">Timbre roto, llamar al móvil al llegar por favor</span></div>
+        <div><strong>Tipo de pedido:</strong> <span id="display-tipo-servicio">—</span></div>
+        <div id="display-direccion-row" style="margin-top:4px;"><strong>Dirección de entrega:</strong> <span id="display-direccion">—</span></div>
+        <div style="margin-top:4px;"><strong>Cliente:</strong> <span id="display-cliente">—</span> (<span id="display-telefono">—</span>)</div>
+        <div id="display-notas-row" style="margin-top:4px; color:#0369a1;"><strong>Notas:</strong> <span id="display-notas">—</span></div>
       </div>
     </div>
 
@@ -535,25 +535,35 @@
         .replace(/'/g, '&#39;');
     }
 
+    function setElText(ids, value) {
+      for (const id of ids) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value;
+      }
+    }
+
     function updateTrackingUI(order) {
       if (!order) return;
 
-      const estado = order.estado || 'recibido';
+      const estado = (order.estado === 'en_preparacion' ? 'cocina' : (order.estado === 'pendiente' ? 'recibido' : (order.estado || 'recibido')));
       
-      document.getElementById('header-order-num').textContent = '#' + (order.numero_comanda || '101');
-      document.getElementById('display-service-type').textContent = order.tipo_servicio === 'delivery' ? 'Entrega a domicilio' : 'Recogida en local';
-      document.getElementById('display-address').textContent = escapeHtml(order.direccion_entrega || 'Recogida en el local');
-      document.getElementById('display-name').textContent = escapeHtml(order.cliente_nombre || 'Cliente');
-      document.getElementById('display-phone').textContent = escapeHtml(order.cliente_telefono || '-');
-      document.getElementById('display-notes').textContent = escapeHtml(order.notas_cliente || 'Sin notas especiales');
+      setElText(['display-order-num', 'header-order-num'], 'Comanda #' + (order.numero_comanda || '101'));
+      if (order.created_at) {
+        setElText(['display-timestamp'], 'Registrada a las ' + new Date(order.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }));
+      }
+      setElText(['display-tipo-servicio', 'display-service-type'], order.tipo_servicio === 'delivery' ? 'Entrega a domicilio' : 'Recogida en local');
+      setElText(['display-direccion', 'display-address'], order.direccion_entrega || 'Recogida en el local');
+      setElText(['display-cliente', 'display-name'], order.cliente_nombre || 'Cliente');
+      setElText(['display-telefono', 'display-phone'], order.cliente_telefono || '-');
+      setElText(['display-notas', 'display-notes'], order.notas_cliente || 'Sin notas especiales');
 
       const subFormatted = order.subtotal_formatted || ((order.subtotal_cents||0)/100).toFixed(2).replace('.', ',') + ' €';
       const envioFormatted = order.gastos_envio_formatted || ((order.gastos_envio_cents||0)/100).toFixed(2).replace('.', ',') + ' €';
       const totalFormatted = order.total_formatted || ((order.total_cents||0)/100).toFixed(2).replace('.', ',') + ' €';
 
-      document.getElementById('display-subtotal').textContent = subFormatted;
-      document.getElementById('display-envio').textContent = envioFormatted;
-      document.getElementById('display-total').textContent = totalFormatted;
+      setElText(['display-subtotal'], subFormatted);
+      setElText(['display-envio'], envioFormatted);
+      setElText(['display-total'], totalFormatted);
 
       const steps = ['recibido', 'cocina', 'listo', 'entregado'];
       const currentIndex = steps.indexOf(estado);

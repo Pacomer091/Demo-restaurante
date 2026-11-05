@@ -105,6 +105,17 @@ BEGIN
 
 END $$;
 
+-- Permitir que el dueño del restaurante también pueda borrar comandas de su propio local en Supabase
+DROP POLICY IF EXISTS pedidos_delete ON public.pedidos;
+CREATE POLICY pedidos_delete ON public.pedidos
+  FOR DELETE TO authenticated
+  USING (es_superadmin() OR restaurante_id = restaurante_del_usuario());
+
+DROP POLICY IF EXISTS lineas_delete ON public.lineas_de_pedido;
+CREATE POLICY lineas_delete ON public.lineas_de_pedido
+  FOR DELETE TO authenticated
+  USING (es_superadmin() OR restaurante_id = restaurante_del_usuario());
+
 COMMIT;
 
 -- Mostrar los usuarios configurados
