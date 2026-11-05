@@ -2071,16 +2071,20 @@
       }
 
       currentAuthSessionUser = null;
+      if (savedLocal && savedLocal.uid) {
+        try {
+          localStorage.removeItem('fogon_customer_profile');
+        } catch (_) {}
+        savedLocal = null;
+      }
 
-      if (savedLocal && (savedLocal.nombre || savedLocal.email)) {
-        const displayName = (savedLocal.nombre || savedLocal.email || 'Cliente').split(' ')[0];
-        if (authLabel) authLabel.textContent = 'Mi cuenta (' + displayName + ')';
+      if (savedLocal && savedLocal.nombre) {
+        if (authLabel) authLabel.textContent = 'Mi cuenta (' + savedLocal.nombre.split(' ')[0] + ')';
         syncCustomerDataToCheckout(savedLocal);
-        renderCustomerAuthModalView(savedLocal);
       } else {
         if (authLabel) authLabel.textContent = 'Iniciar sesión';
-        renderCustomerAuthModalView(null);
       }
+      renderCustomerAuthModalView(null);
     }
 
     function renderCustomerAuthModalView(profile) {
@@ -2238,33 +2242,8 @@
           if (error) {
             let msg = 'Correo electrónico o contraseña incorrectos.';
             const errMsg = String(error.message || '');
-            // Verificar si la cuenta fue guardada localmente durante el registro en este dispositivo
-            let localAccounts = {};
-            try {
-              localAccounts = JSON.parse(localStorage.getItem('fogon_local_accounts') || '{}') || {};
-            } catch (_) {}
-            const localAcc = localAccounts[email.toLowerCase()];
-            if (localAcc && localAcc.password === password) {
-              const profileObj = {
-                email,
-                nombre: localAcc.nombre || email.split('@')[0],
-                telefono: localAcc.telefono || '',
-                direccion: localAcc.direccion || '',
-                provider: 'email'
-              };
-              localStorage.setItem('fogon_customer_profile', JSON.stringify(profileObj));
-              await loadSavedCustomerProfile();
-              closeCustomerAuthModal();
-              if (typeof showToast === 'function') {
-                showToast('¡Bienvenido de nuevo, ' + profileObj.nombre + '!');
-              }
-              return;
-            }
-
             if (errMsg.toLowerCase().includes('email not confirmed')) {
-              msg = 'Tu correo está pendiente de confirmación porque en Supabase está activo "Confirm email". Desactívalo en Supabase (Authentication → Providers → Email → Confirm email) para entrar sin confirmar.';
-            } else if (errMsg.toLowerCase().includes('rate limit')) {
-              msg = 'Límite de envío de correos de Supabase alcanzado (máx. 3 correos/hora con Confirm email activo). Desactiva "Confirm email" en Supabase → Authentication → Providers → Email.';
+              msg = 'Tu correo electrónico está pendiente de confirmación.';
             } else if (errMsg && !errMsg.includes('Invalid login credentials')) {
               msg = errMsg;
             }
@@ -2295,32 +2274,7 @@
           });
 
           if (error) {
-            const rawErr = String(error.message || '');
-            if (rawErr.toLowerCase().includes('rate limit')) {
-              // Supabase bloquea signUp cuando "Confirm email" está activo y se superan 3 correos/hora.
-              // Guardamos la cuenta e iniciamos sesión localmente en el acto para no bloquear al cliente.
-              const profileObj = {
-                email,
-                nombre,
-                telefono,
-                direccion,
-                provider: 'email'
-              };
-              try {
-                localStorage.setItem('fogon_customer_profile', JSON.stringify(profileObj));
-                const localAccounts = JSON.parse(localStorage.getItem('fogon_local_accounts') || '{}') || {};
-                localAccounts[email.toLowerCase()] = { email, password, nombre, telefono, direccion };
-                localStorage.setItem('fogon_local_accounts', JSON.stringify(localAccounts));
-              } catch (_) {}
-              await loadSavedCustomerProfile();
-              closeCustomerAuthModal();
-              if (typeof showToast === 'function') {
-                showToast('¡Cuenta creada y sesión iniciada como ' + nombre + '!');
-              }
-              return;
-            }
-
-            let msg = rawErr || 'No se pudo completar el registro.';
+            let msg = error.message || 'No se pudo completar el registro.';
             if (msg.includes('User already registered')) {
               msg = 'Este correo ya está registrado. Cambia a la pestaña "Iniciar sesión".';
             } else if (msg.includes('Password should be at least')) {
@@ -2340,9 +2294,6 @@
           };
           try {
             localStorage.setItem('fogon_customer_profile', JSON.stringify(profileObj));
-            const localAccounts = JSON.parse(localStorage.getItem('fogon_local_accounts') || '{}') || {};
-            localAccounts[email.toLowerCase()] = { email, password, nombre, telefono, direccion };
-            localStorage.setItem('fogon_local_accounts', JSON.stringify(localAccounts));
           } catch (_) {}
           syncCustomerDataToCheckout(profileObj);
 
@@ -2353,12 +2304,8 @@
               showToast('¡Cuenta creada y sesión iniciada como ' + nombre + '!');
             }
           } else {
-            // Si Supabase tenía "Confirm email" activo y creó el usuario sin sesión activa, dejamos la sesión iniciada con su perfil
             await loadSavedCustomerProfile();
-            closeCustomerAuthModal();
-            if (typeof showToast === 'function') {
-              showToast('¡Cuenta creada y sesión iniciada como ' + nombre + '!');
-            }
+            showCustAuthAlert('¡Cuenta registrada con éxito! Revisa tu correo ' + email + ' para confirmarla.', 'success');
           }
         }
       } catch (err) {
