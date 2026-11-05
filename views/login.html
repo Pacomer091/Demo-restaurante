@@ -370,7 +370,7 @@
       try {
         const { data: { session } } = await window.supabaseClient.auth.getSession();
         if (session && session.user) {
-          await routeAuthenticatedUser(session.user);
+          await routeAuthenticatedUser(session.user, true);
         }
       } catch (err) {
         console.warn('Comprobación de sesión previa:', err);
@@ -378,7 +378,7 @@
     }
 
     // Enrutar al usuario según su rol en la tabla perfiles
-    async function routeAuthenticatedUser(user) {
+    async function routeAuthenticatedUser(user, isSilentCheck = false) {
       try {
         const { data: perfil, error } = await window.supabaseClient
           .from('perfiles')
@@ -387,9 +387,14 @@
           .maybeSingle();
 
         if (error || !perfil) {
-          console.warn('Perfil no encontrado para user_id:', user.id);
-          showAlert('Tu usuario está autenticado pero no tiene un perfil asignado en el sistema. Contacta con soporte.');
+          if (isSilentCheck) {
+            // Tiene sesión de cliente de la carta abierta; permitir que introduzca credenciales de restaurante sin mostrar error
+            return;
+          }
+          console.warn('Perfil profesional no encontrado para user_id:', user.id);
+          showAlert('Esta cuenta es de cliente o no tiene permisos de administración del restaurante. Inicia sesión con una cuenta de restaurante.');
           await window.supabaseClient.auth.signOut();
+          setLoading(false);
           return;
         }
 
@@ -398,11 +403,15 @@
 
         if (perfil.rol === 'superadmin' || perfil.rol === 'dueno') {
           window.location.href = 'control.html';
-        } else {
+        } else if (!isSilentCheck) {
           showAlert('Rol no reconocido: ' + perfil.rol);
+          setLoading(false);
         }
       } catch (err) {
-        showAlert('Error al consultar perfil: ' + (err.message || 'Error desconocido'));
+        if (!isSilentCheck) {
+          showAlert('Error al consultar perfil: ' + (err.message || 'Error desconocido'));
+          setLoading(false);
+        }
       }
     }
 

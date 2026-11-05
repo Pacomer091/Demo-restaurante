@@ -1730,36 +1730,116 @@
     </div>
   </div>
 
-  <!-- 9. MODAL: INICIAR SESIÓN CLIENTE -->
+  <!-- 9. MODAL: INICIAR SESIÓN / REGISTRO REAL CLIENTE (SUPABASE AUTH + GOOGLE) -->
   <div class="modal-overlay" id="customer-auth-modal" onclick="if(event.target.id==='customer-auth-modal') closeCustomerAuthModal()">
-    <div class="modal-card">
+    <div class="modal-card" style="max-width:440px;">
       <div class="sheet-drag-handle"></div>
       <div class="modal-header">
-        <h3 class="modal-title">Iniciar sesión / Mi Cuenta</h3>
+        <h3 class="modal-title" id="cust-auth-modal-title">Accede a tu cuenta</h3>
         <button onclick="closeCustomerAuthModal()" class="btn-close-modal" aria-label="Cerrar">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
       </div>
-      <div class="modal-body">
-        <p style="font-size:0.88rem; color:var(--text-muted); margin:0;">Guarda tus datos para tramitar tus pedidos más rápido y consultar tu historial en este dispositivo.</p>
-        <form onsubmit="handleCustomerAuthSubmit(event)" id="customer-auth-form">
-          <div class="form-group">
-            <label for="auth-cust-name" class="form-label">Nombre completo</label>
-            <input type="text" id="auth-cust-name" class="form-input" required placeholder="Ej. Carlos Mendoza">
+      <div class="modal-body" style="gap:14px;">
+
+        <!-- Alerta de estado o errores de Auth -->
+        <div id="cust-auth-alert" style="display:none; padding:10px 12px; border-radius:10px; font-size:0.84rem; font-weight:700; line-height:1.4; align-items:flex-start; gap:8px;">
+          <span id="cust-auth-alert-text"></span>
+        </div>
+
+        <!-- VISTA A: NO AUTENTICADO (LOGIN / REGISTRO + GOOGLE) -->
+        <div id="cust-auth-guest-view" style="display:flex; flex-direction:column; gap:14px;">
+          <!-- Botón Oficial Continuar con Google -->
+          <button type="button" id="btn-google-oauth" onclick="handleGoogleSignIn()" style="width:100%; min-height:48px; border-radius:12px; border:1.5px solid #cbd5e1; background:#ffffff; color:#0f172a; font-size:0.94rem; font-weight:800; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:10px; cursor:pointer; box-shadow:0 2px 6px rgba(15,23,42,0.04); transition:all 0.15s ease;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#94a3b8';" onmouseout="this.style.background='#ffffff'; this.style.borderColor='#cbd5e1';">
+            <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/></svg>
+            <span>Continuar con Google</span>
+          </button>
+
+          <!-- Separador -->
+          <div style="display:flex; align-items:center; gap:10px; color:#94a3b8; font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em;">
+            <div style="flex:1; height:1px; background:#e2e8f0;"></div>
+            <span>o con tu correo</span>
+            <div style="flex:1; height:1px; background:#e2e8f0;"></div>
           </div>
-          <div class="form-group">
-            <label for="auth-cust-phone" class="form-label">Teléfono móvil</label>
-            <input type="tel" id="auth-cust-phone" class="form-input" required placeholder="Ej. 654 321 000">
+
+          <!-- Selector de Pestaña: Iniciar Sesión vs Crear Cuenta -->
+          <div class="service-toggle-wrap">
+            <button type="button" class="service-btn active" id="tab-btn-auth-login" onclick="switchCustomerAuthTab('login')">
+              <span>Iniciar sesión</span>
+            </button>
+            <button type="button" class="service-btn" id="tab-btn-auth-register" onclick="switchCustomerAuthTab('register')">
+              <span>Crear cuenta</span>
+            </button>
           </div>
-          <div class="form-group">
-            <label for="auth-cust-address" class="form-label">Dirección habitual de entrega</label>
-            <input type="text" id="auth-cust-address" class="form-input" placeholder="Calle, número, piso y puerta">
+
+          <!-- Formulario Login / Registro -->
+          <form onsubmit="handleCustomerAuthSubmit(event)" id="customer-auth-form" style="display:flex; flex-direction:column; gap:10px;">
+            <div class="form-group" style="margin:0;">
+              <label for="auth-cust-email" class="form-label">Correo electrónico</label>
+              <input type="email" id="auth-cust-email" class="form-input" required placeholder="tu@correo.com" autocomplete="email">
+            </div>
+
+            <div class="form-group" style="margin:0;">
+              <label for="auth-cust-password" class="form-label">Contraseña</label>
+              <input type="password" id="auth-cust-password" class="form-input" required minlength="6" placeholder="Mínimo 6 caracteres" autocomplete="current-password">
+            </div>
+
+            <!-- Campos adicionales exclusivos para Registro -->
+            <div id="auth-register-extra-fields" style="display:none; flex-direction:column; gap:10px;">
+              <div class="form-group" style="margin:0;">
+                <label for="auth-cust-name" class="form-label">Tu nombre completo</label>
+                <input type="text" id="auth-cust-name" class="form-input" placeholder="Ej. Carlos Mendoza" autocomplete="name">
+              </div>
+              <div class="form-group" style="margin:0;">
+                <label for="auth-cust-phone" class="form-label">Teléfono móvil</label>
+                <input type="tel" id="auth-cust-phone" class="form-input" placeholder="Ej. 654 321 000" autocomplete="tel">
+              </div>
+              <div class="form-group" style="margin:0;">
+                <label for="auth-cust-address" class="form-label">Dirección habitual de entrega (opcional)</label>
+                <input type="text" id="auth-cust-address" class="form-input" placeholder="Calle, número, piso y puerta" autocomplete="street-address">
+              </div>
+            </div>
+
+            <button type="submit" id="btn-cust-auth-submit" class="btn btn-primary" style="width:100%; min-height:48px; font-weight:800; margin-top:4px; justify-content:center;">
+              <span id="btn-cust-auth-submit-label">Iniciar sesión</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- VISTA B: PERFIL DE USUARIO AUTENTICADO -->
+        <div id="cust-auth-profile-view" style="display:none; flex-direction:column; gap:14px;">
+          <div style="display:flex; align-items:center; gap:12px; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px;">
+            <div id="cust-profile-avatar" style="width:46px; height:46px; border-radius:50%; background:var(--brand-gradient); color:#ffffff; font-weight:900; font-size:1.15rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden;">
+              U
+            </div>
+            <div style="flex:1; min-width:0;">
+              <div id="cust-profile-email-badge" style="font-size:0.92rem; font-weight:800; color:var(--text-main); word-break:break-all;">usuario@correo.com</div>
+              <div id="cust-profile-provider-badge" style="font-size:0.76rem; color:#059669; font-weight:700; display:flex; align-items:center; gap:4px; margin-top:2px;">
+                <span>● Sesión verificada activa</span>
+              </div>
+            </div>
           </div>
-          <div style="display:flex; gap:8px; margin-top:1rem;">
-            <button type="submit" class="btn btn-primary" style="flex:1; min-height:48px; font-weight:800;">Guardar e Iniciar Sesión</button>
-            <button type="button" id="btn-cust-logout" onclick="logoutCustomerProfile()" class="btn btn-secondary" style="display:none; min-height:48px; font-weight:700; color:#dc2626; border-color:#fecaca;">Cerrar sesión</button>
-          </div>
-        </form>
+
+          <form onsubmit="handleSaveCustomerProfileData(event)" style="display:flex; flex-direction:column; gap:10px;">
+            <div class="form-group" style="margin:0;">
+              <label for="profile-cust-name" class="form-label">Nombre para tus pedidos</label>
+              <input type="text" id="profile-cust-name" class="form-input" required placeholder="Ej. Carlos Mendoza">
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label for="profile-cust-phone" class="form-label">Teléfono móvil de contacto</label>
+              <input type="tel" id="profile-cust-phone" class="form-input" required placeholder="Ej. 654 321 000">
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label for="profile-cust-address" class="form-label">Dirección habitual de entrega</label>
+              <input type="text" id="profile-cust-address" class="form-input" placeholder="Calle, número, piso y puerta">
+            </div>
+            <div style="display:flex; gap:8px; margin-top:6px;">
+              <button type="submit" id="btn-save-cust-profile" class="btn btn-primary" style="flex:1; min-height:46px; font-weight:800; justify-content:center;">Guardar mis datos</button>
+              <button type="button" onclick="logoutCustomerProfile()" class="btn btn-secondary" style="min-height:46px; font-weight:800; color:#dc2626; border-color:#fecaca; background:#fff5f5;">Cerrar sesión</button>
+            </div>
+          </form>
+        </div>
+
       </div>
     </div>
   </div>
@@ -1882,39 +1962,193 @@
       }
     });
 
-    function loadSavedCustomerProfile() {
-      try {
-        const saved = JSON.parse(localStorage.getItem('fogon_customer_profile') || 'null');
-        const authLabel = document.getElementById('menu-item-auth-label');
-        const logoutBtn = document.getElementById('btn-cust-logout');
-        if (saved && saved.nombre) {
-          if (authLabel) authLabel.textContent = 'Mi cuenta (' + saved.nombre.split(' ')[0] + ')';
-          if (logoutBtn) logoutBtn.style.display = 'inline-flex';
-          const cName = document.getElementById('cust-name');
-          const cPhone = document.getElementById('cust-phone');
-          const cAddr = document.getElementById('cust-address');
-          if (cName && saved.nombre) cName.value = saved.nombre;
-          if (cPhone && saved.telefono) cPhone.value = saved.telefono;
-          if (cAddr && saved.direccion) cAddr.value = saved.direccion;
-        } else {
-          if (authLabel) authLabel.textContent = 'Iniciar sesión';
-          if (logoutBtn) logoutBtn.style.display = 'none';
-        }
-      } catch (_) {}
+    let currentCustomerAuthMode = 'login';
+    let currentAuthSessionUser = null;
+
+    function showCustAuthAlert(msg, type = 'error') {
+      const box = document.getElementById('cust-auth-alert');
+      const txt = document.getElementById('cust-auth-alert-text');
+      if (!box || !txt) return;
+      txt.textContent = msg;
+      if (type === 'error') {
+        box.style.background = '#fee2e2';
+        box.style.border = '1px solid #fecaca';
+        box.style.color = '#991b1b';
+      } else if (type === 'success') {
+        box.style.background = '#dcfce7';
+        box.style.border = '1px solid #bbf7d0';
+        box.style.color = '#166534';
+      } else {
+        box.style.background = '#eff6ff';
+        box.style.border = '1px solid #bfdbfe';
+        box.style.color = '#1e40af';
+      }
+      box.style.display = 'flex';
     }
 
-    document.addEventListener('DOMContentLoaded', loadSavedCustomerProfile);
+    function hideCustAuthAlert() {
+      const box = document.getElementById('cust-auth-alert');
+      if (box) box.style.display = 'none';
+    }
+
+    function switchCustomerAuthTab(mode) {
+      currentCustomerAuthMode = mode === 'register' ? 'register' : 'login';
+      hideCustAuthAlert();
+
+      const tabLogin = document.getElementById('tab-btn-auth-login');
+      const tabReg = document.getElementById('tab-btn-auth-register');
+      const extraFields = document.getElementById('auth-register-extra-fields');
+      const submitLabel = document.getElementById('btn-cust-auth-submit-label');
+      const nameInp = document.getElementById('auth-cust-name');
+      const phoneInp = document.getElementById('auth-cust-phone');
+
+      if (tabLogin) tabLogin.classList.toggle('active', currentCustomerAuthMode === 'login');
+      if (tabReg) tabReg.classList.toggle('active', currentCustomerAuthMode === 'register');
+
+      if (extraFields) {
+        extraFields.style.display = currentCustomerAuthMode === 'register' ? 'flex' : 'none';
+      }
+      if (nameInp) nameInp.required = currentCustomerAuthMode === 'register';
+      if (phoneInp) phoneInp.required = currentCustomerAuthMode === 'register';
+      if (submitLabel) {
+        submitLabel.textContent = currentCustomerAuthMode === 'register' ? 'Crear cuenta ahora' : 'Iniciar sesión';
+      }
+    }
+
+    function syncCustomerDataToCheckout(profile) {
+      if (!profile) return;
+      const cName = document.getElementById('cust-name');
+      const cPhone = document.getElementById('cust-phone');
+      const cAddr = document.getElementById('cust-address');
+      if (cName && profile.nombre) cName.value = profile.nombre;
+      if (cPhone && profile.telefono) cPhone.value = profile.telefono;
+      if (cAddr && profile.direccion) cAddr.value = profile.direccion;
+    }
+
+    async function loadSavedCustomerProfile() {
+      const authLabel = document.getElementById('menu-item-auth-label');
+      let savedLocal = null;
+      try {
+        savedLocal = JSON.parse(localStorage.getItem('fogon_customer_profile') || 'null');
+      } catch (_) {}
+
+      if (window.supabaseClient) {
+        try {
+          const { data: { session } } = await window.supabaseClient.auth.getSession();
+          if (session && session.user) {
+            currentAuthSessionUser = session.user;
+            const meta = session.user.user_metadata || {};
+            const email = session.user.email || '';
+            const nombre = meta.nombre || meta.full_name || meta.name || (savedLocal && savedLocal.nombre) || (email ? email.split('@')[0] : 'Cliente');
+            const telefono = meta.telefono || meta.phone || (savedLocal && savedLocal.telefono) || '';
+            const direccion = meta.direccion || (savedLocal && savedLocal.direccion) || '';
+            const avatarUrl = meta.avatar_url || meta.picture || '';
+
+            const mergedProfile = {
+              uid: session.user.id,
+              email,
+              nombre,
+              telefono,
+              direccion,
+              avatar_url: avatarUrl,
+              provider: (session.user.app_metadata && session.user.app_metadata.provider) || 'email'
+            };
+
+            try {
+              localStorage.setItem('fogon_customer_profile', JSON.stringify(mergedProfile));
+            } catch (_) {}
+
+            if (authLabel) {
+              authLabel.textContent = 'Mi cuenta (' + nombre.split(' ')[0] + ')';
+            }
+            syncCustomerDataToCheckout(mergedProfile);
+            renderCustomerAuthModalView(mergedProfile);
+            return;
+          }
+        } catch (err) {
+          console.warn('Error verificando sesión Supabase de cliente:', err);
+        }
+      }
+
+      currentAuthSessionUser = null;
+      if (savedLocal && savedLocal.uid) {
+        try {
+          localStorage.removeItem('fogon_customer_profile');
+        } catch (_) {}
+        savedLocal = null;
+      }
+
+      if (savedLocal && savedLocal.nombre) {
+        if (authLabel) authLabel.textContent = 'Mi cuenta (' + savedLocal.nombre.split(' ')[0] + ')';
+        syncCustomerDataToCheckout(savedLocal);
+      } else {
+        if (authLabel) authLabel.textContent = 'Iniciar sesión';
+      }
+      renderCustomerAuthModalView(null);
+    }
+
+    function renderCustomerAuthModalView(profile) {
+      const guestView = document.getElementById('cust-auth-guest-view');
+      const profileView = document.getElementById('cust-auth-profile-view');
+      const titleEl = document.getElementById('cust-auth-modal-title');
+      if (!guestView || !profileView) return;
+
+      if (profile && (currentAuthSessionUser || profile.email)) {
+        guestView.style.display = 'none';
+        profileView.style.display = 'flex';
+        if (titleEl) titleEl.textContent = 'Mi Cuenta';
+
+        const emailBadge = document.getElementById('cust-profile-email-badge');
+        const provBadge = document.getElementById('cust-profile-provider-badge');
+        const avatarEl = document.getElementById('cust-profile-avatar');
+
+        if (emailBadge) emailBadge.textContent = profile.email || profile.nombre || 'Usuario autenticado';
+        if (provBadge) {
+          const isGoogle = profile.provider === 'google';
+          provBadge.innerHTML = isGoogle
+            ? '<span>✓ Conectado con Google</span>'
+            : '<span>● Sesión verificada activa</span>';
+        }
+        if (avatarEl) {
+          if (profile.avatar_url) {
+            avatarEl.innerHTML = `<img src="${profile.avatar_url}" alt="" style="width:100%; height:100%; object-fit:cover;">`;
+          } else {
+            const initial = (profile.nombre || profile.email || 'U').trim().charAt(0).toUpperCase();
+            avatarEl.textContent = initial;
+          }
+        }
+
+        const pName = document.getElementById('profile-cust-name');
+        const pPhone = document.getElementById('profile-cust-phone');
+        const pAddr = document.getElementById('profile-cust-address');
+        if (pName) pName.value = profile.nombre || '';
+        if (pPhone) pPhone.value = profile.telefono || '';
+        if (pAddr) pAddr.value = profile.direccion || '';
+      } else {
+        guestView.style.display = 'flex';
+        profileView.style.display = 'none';
+        if (titleEl) titleEl.textContent = 'Accede a tu cuenta';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadSavedCustomerProfile();
+      if (window.supabaseClient && window.supabaseClient.auth) {
+        window.supabaseClient.auth.onAuthStateChange((event, session) => {
+          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+            loadSavedCustomerProfile();
+          } else if (event === 'SIGNED_OUT') {
+            currentAuthSessionUser = null;
+            loadSavedCustomerProfile();
+          }
+        });
+      }
+    });
 
     function openCustomerAuthModal() {
       closeTopNavMenu();
-      try {
-        const saved = JSON.parse(localStorage.getItem('fogon_customer_profile') || 'null');
-        if (saved) {
-          document.getElementById('auth-cust-name').value = saved.nombre || '';
-          document.getElementById('auth-cust-phone').value = saved.telefono || '';
-          document.getElementById('auth-cust-address').value = saved.direccion || '';
-        }
-      } catch (_) {}
+      hideCustAuthAlert();
+      loadSavedCustomerProfile();
       document.body.classList.add('modal-open');
       document.getElementById('customer-auth-modal').classList.add('open');
     }
@@ -1924,30 +2158,244 @@
       document.getElementById('customer-auth-modal').classList.remove('open');
     }
 
-    function handleCustomerAuthSubmit(e) {
-      e.preventDefault();
-      const nombre = document.getElementById('auth-cust-name').value.trim();
-      const telefono = document.getElementById('auth-cust-phone').value.trim();
-      const direccion = document.getElementById('auth-cust-address').value.trim();
-      if (!nombre || !telefono) return;
+    async function handleGoogleSignIn() {
+      hideCustAuthAlert();
+      if (!window.supabaseClient) {
+        showCustAuthAlert('El servicio de autenticación no está disponible en este momento.');
+        return;
+      }
+
+      const btn = document.getElementById('btn-google-oauth');
+      if (btn) btn.disabled = true;
+
       try {
-        localStorage.setItem('fogon_customer_profile', JSON.stringify({ nombre, telefono, direccion }));
-      } catch (_) {}
-      loadSavedCustomerProfile();
-      closeCustomerAuthModal();
-      if (typeof showToast === 'function') {
-        showToast('Sesión iniciada como ' + nombre, 'success');
+        // Comprobar si Google OAuth está activo en Supabase Auth settings
+        try {
+          const settingsRes = await fetch(`${window.SUPABASE_CONFIG.url}/auth/v1/settings`, {
+            headers: { apikey: window.SUPABASE_CONFIG.key }
+          });
+          if (settingsRes.ok) {
+            const settings = await settingsRes.json();
+            if (settings && settings.external && settings.external.google === false) {
+              showCustAuthAlert('El acceso con Google aún no está activado en el panel de Supabase (Authentication → Providers → Google). Mientras tanto, puedes iniciar sesión o crear tu cuenta con tu correo y contraseña aquí abajo.', 'info');
+              if (btn) btn.disabled = false;
+              return;
+            }
+          }
+        } catch (_) {}
+
+        const redirectUrl = window.location.origin + window.location.pathname;
+        const { error } = await window.supabaseClient.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: redirectUrl
+          }
+        });
+
+        if (error) {
+          showCustAuthAlert('No se pudo conectar con Google: ' + (error.message || 'Verifica la configuración de Google OAuth en Supabase.'));
+          if (btn) btn.disabled = false;
+        }
+      } catch (err) {
+        showCustAuthAlert('Error al iniciar con Google: ' + (err.message || err));
+        if (btn) btn.disabled = false;
       }
     }
 
-    function logoutCustomerProfile() {
+    async function handleCustomerAuthSubmit(e) {
+      e.preventDefault();
+      hideCustAuthAlert();
+
+      const email = (document.getElementById('auth-cust-email').value || '').trim();
+      const password = document.getElementById('auth-cust-password').value || '';
+      const nombre = (document.getElementById('auth-cust-name').value || '').trim();
+      const telefono = (document.getElementById('auth-cust-phone').value || '').trim();
+      const direccion = (document.getElementById('auth-cust-address').value || '').trim();
+
+      if (!email || !password) {
+        showCustAuthAlert('Por favor, introduce tu correo electrónico y contraseña.');
+        return;
+      }
+
+      if (currentCustomerAuthMode === 'register' && (!nombre || !telefono)) {
+        showCustAuthAlert('Por favor, indica tu nombre y teléfono móvil para tus pedidos.');
+        return;
+      }
+
+      if (!window.supabaseClient) {
+        showCustAuthAlert('Error de conexión con el servidor de autenticación.');
+        return;
+      }
+
+      const submitBtn = document.getElementById('btn-cust-auth-submit');
+      const submitLabel = document.getElementById('btn-cust-auth-submit-label');
+      if (submitBtn) submitBtn.disabled = true;
+      if (submitLabel) submitLabel.textContent = 'Procesando...';
+
+      try {
+        if (currentCustomerAuthMode === 'login') {
+          const { data, error } = await window.supabaseClient.auth.signInWithPassword({
+            email,
+            password
+          });
+
+          if (error) {
+            let msg = 'Correo electrónico o contraseña incorrectos.';
+            if (error.message && error.message.includes('Email not confirmed')) {
+              msg = 'Tu correo electrónico está pendiente de confirmación. Revisa tu bandeja de entrada.';
+            } else if (error.message && !error.message.includes('Invalid login credentials')) {
+              msg = error.message;
+            }
+            showCustAuthAlert(msg, 'error');
+            return;
+          }
+
+          if (data && data.user) {
+            await loadSavedCustomerProfile();
+            closeCustomerAuthModal();
+            const userName = (data.user.user_metadata && data.user.user_metadata.nombre) || email.split('@')[0];
+            if (typeof showToast === 'function') {
+              showToast('¡Bienvenido de nuevo, ' + userName + '!');
+            }
+          }
+        } else {
+          // Modo Registro en Supabase Auth
+          const { data, error } = await window.supabaseClient.auth.signUp({
+            email,
+            password,
+            options: {
+              data: {
+                nombre,
+                telefono,
+                direccion
+              }
+            }
+          });
+
+          if (error) {
+            let msg = error.message || 'No se pudo completar el registro.';
+            if (msg.includes('User already registered')) {
+              msg = 'Este correo ya está registrado. Cambia a la pestaña "Iniciar sesión".';
+            } else if (msg.includes('Password should be at least')) {
+              msg = 'La contraseña debe tener al menos 6 caracteres.';
+            }
+            showCustAuthAlert(msg, 'error');
+            return;
+          }
+
+          const profileObj = {
+            uid: data && data.user ? data.user.id : null,
+            email,
+            nombre,
+            telefono,
+            direccion,
+            provider: 'email'
+          };
+          try {
+            localStorage.setItem('fogon_customer_profile', JSON.stringify(profileObj));
+          } catch (_) {}
+          syncCustomerDataToCheckout(profileObj);
+
+          if (data && data.session) {
+            await loadSavedCustomerProfile();
+            closeCustomerAuthModal();
+            if (typeof showToast === 'function') {
+              showToast('¡Cuenta creada y sesión iniciada como ' + nombre + '!');
+            }
+          } else {
+            // Si Supabase requiere confirmación por email pero ya creó el usuario
+            await loadSavedCustomerProfile();
+            showCustAuthAlert('¡Cuenta registrada con éxito! Te hemos enviado un enlace de confirmación a ' + email + ' (tus datos de entrega ya han quedado guardados).', 'success');
+            if (typeof showToast === 'function') {
+              showToast('Cuenta creada para ' + nombre);
+            }
+          }
+        }
+      } catch (err) {
+        showCustAuthAlert('Error inesperado: ' + (err.message || err), 'error');
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
+        if (submitLabel) {
+          submitLabel.textContent = currentCustomerAuthMode === 'register' ? 'Crear cuenta ahora' : 'Iniciar sesión';
+        }
+      }
+    }
+
+    async function handleSaveCustomerProfileData(e) {
+      e.preventDefault();
+      hideCustAuthAlert();
+
+      const nombre = (document.getElementById('profile-cust-name').value || '').trim();
+      const telefono = (document.getElementById('profile-cust-phone').value || '').trim();
+      const direccion = (document.getElementById('profile-cust-address').value || '').trim();
+
+      if (!nombre || !telefono) {
+        showCustAuthAlert('El nombre y el teléfono son obligatorios para realizar pedidos.');
+        return;
+      }
+
+      const btn = document.getElementById('btn-save-cust-profile');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Guardando...';
+      }
+
+      try {
+        if (window.supabaseClient && currentAuthSessionUser) {
+          const { error } = await window.supabaseClient.auth.updateUser({
+            data: { nombre, telefono, direccion }
+          });
+          if (error) {
+            showCustAuthAlert('Error actualizando en el servidor: ' + error.message);
+            return;
+          }
+        }
+
+        let currentSaved = {};
+        try {
+          currentSaved = JSON.parse(localStorage.getItem('fogon_customer_profile') || '{}') || {};
+        } catch (_) {}
+
+        const updated = {
+          ...currentSaved,
+          nombre,
+          telefono,
+          direccion
+        };
+        localStorage.setItem('fogon_customer_profile', JSON.stringify(updated));
+        await loadSavedCustomerProfile();
+        showCustAuthAlert('✓ Tus datos de entrega se han actualizado en tu cuenta.', 'success');
+        if (typeof showToast === 'function') {
+          showToast('Datos de tu cuenta actualizados');
+        }
+      } catch (err) {
+        showCustAuthAlert('No se pudieron guardar los cambios: ' + (err.message || err));
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = 'Guardar mis datos';
+        }
+      }
+    }
+
+    async function logoutCustomerProfile() {
+      hideCustAuthAlert();
+      if (window.supabaseClient) {
+        try {
+          await window.supabaseClient.auth.signOut();
+        } catch (_) {}
+      }
+      currentAuthSessionUser = null;
       try {
         localStorage.removeItem('fogon_customer_profile');
       } catch (_) {}
-      document.getElementById('auth-cust-name').value = '';
-      document.getElementById('auth-cust-phone').value = '';
-      document.getElementById('auth-cust-address').value = '';
-      loadSavedCustomerProfile();
+
+      const emailInp = document.getElementById('auth-cust-email');
+      const passInp = document.getElementById('auth-cust-password');
+      if (emailInp) emailInp.value = '';
+      if (passInp) passInp.value = '';
+
+      await loadSavedCustomerProfile();
       closeCustomerAuthModal();
       if (typeof showToast === 'function') {
         showToast('Has cerrado sesión correctamente');

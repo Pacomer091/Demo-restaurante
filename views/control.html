@@ -938,7 +938,7 @@
             .eq('user_id', session.user.id)
             .maybeSingle();
 
-          if (!pErr && perfil) {
+          if (!pErr && perfil && (perfil.rol === 'superadmin' || perfil.rol === 'dueno')) {
             CURRENT_USER_PROFILE = perfil;
             if (perfil.restaurante_id) {
               REST_ID = perfil.restaurante_id;
@@ -949,6 +949,10 @@
               userBadge.textContent = (perfil.nombre || perfil.rol) + ' (' + (perfil.rol === 'superadmin' ? 'Superadmin' : 'Dueño') + ')';
               userBadge.style.display = 'inline-flex';
             }
+          } else {
+            // Si es una cuenta de cliente final sin rol administrativo, redirigir a login profesional
+            window.location.href = 'login.html';
+            return false;
           }
         } catch (e) {
           console.warn('Verificación de sesión:', e);

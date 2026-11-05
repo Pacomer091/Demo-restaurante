@@ -800,12 +800,18 @@ async function handleFormCheckout(e) {
             opciones_ids: (item.selectedOptions || []).map(o => o.id)
           }));
 
+          let customerEmail = null;
+          try {
+            const savedProf = JSON.parse(localStorage.getItem('fogon_customer_profile') || 'null');
+            if (savedProf && savedProf.email) customerEmail = savedProf.email;
+          } catch (_) {}
+
           const { data: rpcRes, error: rpcErr } = await window.supabaseClient.rpc('crear_pedido', {
             p_restaurante_id: RESTAURANTE.id || 'rest_demo',
             p_tipo_servicio: currentServiceType,
             p_cliente_nombre: clienteNombre,
             p_cliente_telefono: clienteTelefono,
-            p_cliente_email: null,
+            p_cliente_email: customerEmail,
             p_direccion_entrega: direccionEntrega,
             p_notas_cliente: notasCliente || null,
             p_metodo_pago: selectedPayment,
