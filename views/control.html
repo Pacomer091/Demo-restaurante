@@ -674,14 +674,6 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
           <span>Refrescar</span>
         </button>
-        <button onclick="confirmClearCompleted()" class="btn btn-secondary btn-sm" style="display:inline-flex; align-items:center; gap:6px;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          <span>Limpiar entregadas</span>
-        </button>
-        <button onclick="confirmClearAll()" class="btn btn-secondary btn-sm" style="display:inline-flex; align-items:center; gap:6px; color:#dc2626; border-color:#fca5a5; background:#fff5f5;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-          <span>Borrar todas</span>
-        </button>
       </div>
     </div>
 
@@ -837,7 +829,14 @@
             await window.supabaseClient.from('pedidos').delete().eq('id', 'ped_demo_initial');
           } catch (_) {}
           showToast('Carta restablecida y comandas vaciadas con éxito.', 'success');
-          try { localStorage.removeItem('fogon_orders'); } catch (_) {}
+          try {
+            localStorage.removeItem('fogon_orders');
+            localStorage.removeItem('fogon_incidents');
+            localStorage.removeItem('fogon_resolved_incidents');
+            localStorage.removeItem('fogon_deleted_orders');
+            DELETED_ORDER_IDS.clear();
+            RESOLVED_INCIDENT_IDS.clear();
+          } catch (_) {}
           await loadOrders();
         }
       } catch (err) {
