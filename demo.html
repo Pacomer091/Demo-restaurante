@@ -1895,8 +1895,7 @@
       }).join('');
     }
 
-    async function openPastOrdersModal() {
-      closeTopNavMenu();
+    async function syncLocalOrdersWithSupabase() {
       let orders = [];
       try {
         const raw = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
@@ -1905,33 +1904,57 @@
         }
       } catch (_) {}
 
-      renderPastOrdersList(orders);
+      if (!window.supabaseClient || orders.length === 0) {
+        return orders;
+      }
+
+      const validOrders = [];
+      await Promise.all(orders.map(async (o) => {
+        if (!o.tracking_token) return;
+        try {
+          const { data: rpcOrder, error: rpcErr } = await window.supabaseClient.rpc('obtener_pedido_por_token', {
+            p_token: o.tracking_token
+          });
+          if (!rpcErr && rpcOrder) {
+            if (rpcOrder.ok) {
+              o.estado = rpcOrder.estado || o.estado;
+              validOrders.push(o);
+            }
+            // Si rpcOrder.ok === false, el pedido fue eliminado de la base de datos y se descarta de localStorage
+          } else {
+            validOrders.push(o);
+          }
+        } catch (_) {
+          validOrders.push(o);
+        }
+      }));
+
+      validOrders.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+      try {
+        if (validOrders.length === 0) {
+          localStorage.removeItem('fogon_orders');
+        } else {
+          localStorage.setItem('fogon_orders', JSON.stringify(validOrders));
+        }
+      } catch (_) {}
+      return validOrders;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      syncLocalOrdersWithSupabase();
+    });
+
+    async function openPastOrdersModal() {
+      closeTopNavMenu();
+      const body = document.getElementById('past-orders-list-body');
+      if (body) {
+        body.innerHTML = `<div style="text-align:center; padding:2rem 1rem; color:var(--text-muted); font-size:0.88rem;">Comprobando tus pedidos...</div>`;
+      }
       document.body.classList.add('modal-open');
       document.getElementById('past-orders-modal').classList.add('open');
 
-      // Sincronizar estado real desde Supabase para actualizar si ya fue entregado
-      if (window.supabaseClient && orders.length > 0) {
-        let changed = false;
-        await Promise.all(orders.map(async (o) => {
-          if (!o.tracking_token) return;
-          try {
-            const { data: rpcOrder, error: rpcErr } = await window.supabaseClient.rpc('obtener_pedido_por_token', {
-              p_token: o.tracking_token
-            });
-            if (!rpcErr && rpcOrder && rpcOrder.ok && rpcOrder.estado && rpcOrder.estado !== o.estado) {
-              o.estado = rpcOrder.estado;
-              changed = true;
-            }
-          } catch (_) {}
-        }));
-
-        if (changed) {
-          try {
-            localStorage.setItem('fogon_orders', JSON.stringify(orders));
-          } catch (_) {}
-          renderPastOrdersList(orders);
-        }
-      }
+      const validOrders = await syncLocalOrdersWithSupabase();
+      renderPastOrdersList(validOrders);
     }
 
     function closePastOrdersModal() {
