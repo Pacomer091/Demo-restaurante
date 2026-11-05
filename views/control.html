@@ -1178,11 +1178,9 @@
 
         const map = new Map();
         supaOrders.forEach(o => map.set(o.id, o));
-        if (!supaSuccess) {
-          localOrders.forEach(o => {
-            if (!map.has(o.id)) map.set(o.id, { ...o, incidencias: o.incidencias || [] });
-          });
-        }
+        localOrders.forEach(o => {
+          if (!map.has(o.id)) map.set(o.id, { ...o, incidencias: o.incidencias || [] });
+        });
 
         ordersList = Array.from(map.values()).map(o => {
           const existingIncs = Array.isArray(o.incidencias) ? [...o.incidencias] : [];
@@ -1352,58 +1350,21 @@
         incidenciasPendientes: []
       };
 
-      // Guardar en ordersList y cambiar a pestaña de comandas en curso
-      ordersList.unshift(newOrder);
-      switchControlTab('activas');
-
-      // Guardar en localStorage del restaurante/cliente para sincronización
+      // 1. Guardar en localStorage de comandas
       try {
         let local = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
+        local = local.filter(o => o.id !== newOrderId);
         local.unshift(newOrder);
         localStorage.setItem('fogon_orders', JSON.stringify(local.slice(0, 100)));
       } catch (_) {}
 
-      // Guardar en Supabase si está disponible
-      if (window.supabaseClient) {
-        try {
-          await window.supabaseClient.from('pedidos').insert({
-            id: newOrderId,
-            restaurante_id: REST_ID,
-            numero_comanda: newComandaNum,
-            tracking_token: newTrackingToken,
-            tipo_servicio: newOrder.tipo_servicio,
-            direccion_entrega: newOrder.direccion_entrega,
-            cliente_nombre: newOrder.cliente_nombre,
-            cliente_telefono: newOrder.cliente_telefono,
-            notas_cliente: newOrder.notas_cliente,
-            subtotal_cents: 0,
-            gastos_envio_cents: 0,
-            total_cents: 0,
-            metodo_pago: newOrder.metodo_pago,
-            estado_pago: 'completado',
-            estado: 'cocina',
-            created_at: newOrder.created_at
-          });
+      // 2. Guardar en la lista en memoria y cambiar pestaña inmediatamente
+      ordersList = ordersList.filter(o => o.id !== newOrderId);
+      ordersList.unshift(newOrder);
+      switchControlTab('activas');
 
-          if (lines && lines.length > 0) {
-            const lineRows = lines.map((l, idx) => ({
-              id: `lin_${newOrderId}_${idx + 1}`,
-              pedido_id: newOrderId,
-              restaurante_id: REST_ID,
-              producto_id: l.producto_id || 'prod_inc',
-              nombre_producto: l.nombre_producto,
-              precio_unitario_cents: 0,
-              cantidad: l.cantidad || 1,
-              total_linea_cents: 0,
-              extras_json: l.extras || []
-            }));
-            await window.supabaseClient.from('lineas_de_pedido').insert(lineRows);
-          }
-        } catch (e) {
-          console.warn('Error guardando pedido de reposición en Supabase:', e);
-        }
-      }
-
+      // 3. Notificar y actualizar interfaz de inmediato
+      renderOrders();
       showToast(`Creada comanda de reposición #${newComandaNum} en cocina`, 'success');
     }
 
