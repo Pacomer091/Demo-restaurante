@@ -1240,41 +1240,9 @@ BEGIN
     ('opt_b2_e2', 'grp_b2_extras', 'rest_demo', 'Cebolla crujiente frita (+0,80 €)', 80, TRUE, 2),
     ('opt_b2_e3', 'grp_b2_extras', 'rest_demo', 'Huevo frito a la plancha (+1,20 €)', 120, TRUE, 3);
 
-  -- Comanda inicial de prueba
-  INSERT INTO public.pedidos (
-    id, restaurante_id, numero_comanda, tracking_token, tracking_token_expira_at, tipo_servicio,
-    direccion_entrega, cliente_nombre, cliente_telefono, cliente_email,
-    notas_cliente, subtotal_cents, gastos_envio_cents, total_cents,
-    metodo_pago, estado_pago, estado
-  ) VALUES (
-    'ped_demo_initial',
-    'rest_demo',
-    108,
-    'token_demo_fogoneta_initial_123456789',
-    NOW() + INTERVAL '48 hours',
-    'delivery',
-    'Calle Gran Vía 32, 4º B, Madrid',
-    'Carlos Mendoza',
-    '+34 654 321 000',
-    'carlos@ejemplo.es',
-    'Llamar al telefonillo 4B, sin cebolla cruda',
-    1740,
-    250,
-    1990,
-    'tarjeta',
-    'completado',
-    'cocina'
-  );
-
-  INSERT INTO public.lineas_de_pedido (
-    id, pedido_id, restaurante_id, producto_id, nombre_producto, precio_unitario_cents, cantidad, extras_json, total_linea_cents
-  ) VALUES
-    ('lin_demo_1', 'ped_demo_initial', 'rest_demo', 'prod_b1', 'Smash Trufada Doble', 1190, 1, '[{"grupo_nombre":"Punto de la Carne","opcion_nombre":"Al punto con costra crujiente","precio_extra_cents":0},{"grupo_nombre":"Extras","opcion_nombre":"Bacon crujiente caramelizado","precio_extra_cents":120}]'::jsonb, 1310),
-    ('lin_demo_2', 'ped_demo_initial', 'rest_demo', 'prod_beb1', 'Cerveza Artesana Fogonazo IPA (33cl)', 350, 1, '[]'::jsonb, 350);
-
   RETURN jsonb_build_object(
     'ok', true,
-    'mensaje', 'Carta y comanda demo restauradas con éxito para rest_demo.'
+    'mensaje', 'Carta demo restaurada y comandas limpiadas con éxito para rest_demo.'
   );
 END;
 $$;

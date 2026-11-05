@@ -484,81 +484,9 @@
         .replace(/'/g, '&#39;');
     }
 
-    // Comandas demo iniciales si no hay nada guardado
-    const INITIAL_DEMO_ORDERS = [
-      {
-        id: 'ord_demo_sample_1',
-        restaurante_id: 'rest_demo',
-        numero_comanda: 108,
-        tracking_token: 'trk_demo_sample_1',
-        tipo_servicio: 'delivery',
-        cliente_nombre: 'Laura Gómez',
-        cliente_telefono: '612 345 678',
-        direccion_entrega: 'Calle Serrano 42, 2º A',
-        notas_cliente: 'Timbre roto, llamar al móvil al llegar por favor',
-        subtotal_cents: 2240,
-        gastos_envio_cents: 250,
-        total_cents: 2490,
-        subtotal_formatted: '22,40 €',
-        gastos_envio_formatted: '2,50 €',
-        total_formatted: '24,90 €',
-        metodo_pago: 'bizum',
-        estado: 'cocina',
-        created_at: new Date(Date.now() - 8 * 60000).toISOString(),
-        lineas: [
-          {
-            id: 'lin_demo_1',
-            nombre_producto: 'Smash Trufada Doble',
-            cantidad: 1,
-            total_linea_cents: 1190,
-            extras: [{ opcion_nombre: 'Al punto con costra crujiente' }]
-          },
-          {
-            id: 'lin_demo_2',
-            nombre_producto: 'Smash Bacon Cheese Clásica',
-            cantidad: 1,
-            total_linea_cents: 1050,
-            extras: [{ opcion_nombre: 'Bien hecha' }]
-          }
-        ]
-      },
-      {
-        id: 'ord_demo_sample_2',
-        restaurante_id: 'rest_demo',
-        numero_comanda: 107,
-        tracking_token: 'trk_demo_sample_2',
-        tipo_servicio: 'takeaway',
-        cliente_nombre: 'Marcos Alonso',
-        cliente_telefono: '699 888 777',
-        direccion_entrega: null,
-        notas_cliente: 'Recogida rápida en barra',
-        subtotal_cents: 1540,
-        gastos_envio_cents: 0,
-        total_cents: 1540,
-        subtotal_formatted: '15,40 €',
-        gastos_envio_formatted: '0,00 €',
-        total_formatted: '15,40 €',
-        metodo_pago: 'tarjeta',
-        estado: 'recibido',
-        created_at: new Date(Date.now() - 20 * 60000).toISOString(),
-        lineas: [
-          {
-            id: 'lin_demo_3',
-            nombre_producto: 'Smash Pollo Sureño Crujiente',
-            cantidad: 1,
-            total_linea_cents: 990,
-            extras: []
-          },
-          {
-            id: 'lin_demo_4',
-            nombre_producto: 'Patatas Rústicas Trufadas',
-            cantidad: 1,
-            total_linea_cents: 550,
-            extras: []
-          }
-        ]
-      }
-    ];
+    // Sin comandas falsas por defecto: solo pedidos reales
+    const INITIAL_DEMO_ORDERS = [];
+    const FAKE_ORDER_IDS = new Set(['ord_demo_sample_1', 'ord_demo_sample_2', 'ped_demo_initial']);
 
     // Guarda de sesión y comprobación de rol
     async function checkAuthAndInit() {
@@ -623,7 +551,11 @@
         if (error) {
           showToast('Error al restablecer: ' + error.message, 'error');
         } else {
-          showToast('Carta y datos demo restablecidos con éxito.', 'success');
+          try {
+            await window.supabaseClient.from('lineas_de_pedido').delete().eq('pedido_id', 'ped_demo_initial');
+            await window.supabaseClient.from('pedidos').delete().eq('id', 'ped_demo_initial');
+          } catch (_) {}
+          showToast('Carta restablecida y comandas vaciadas con éxito.', 'success');
           try { localStorage.removeItem('fogon_orders'); } catch (_) {}
           await loadOrders();
         }
@@ -671,16 +603,18 @@
 
             if (!error && Array.isArray(data)) {
               supaSuccess = true;
-              supaOrders = data.map(o => ({
-                ...o,
-                subtotal_formatted: ((o.subtotal_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €',
-                gastos_envio_formatted: ((o.gastos_envio_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €',
-                total_formatted: ((o.total_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €',
-                lineas: (o.lineas_de_pedido || []).map(l => ({
-                  ...l,
-                  extras: Array.isArray(l.extras_json) ? l.extras_json : (typeof l.extras_json === 'string' ? JSON.parse(l.extras_json) : [])
-                }))
-              }));
+              supaOrders = data
+                .filter(o => !FAKE_ORDER_IDS.has(o.id))
+                .map(o => ({
+                  ...o,
+                  subtotal_formatted: ((o.subtotal_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €',
+                  gastos_envio_formatted: ((o.gastos_envio_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €',
+                  total_formatted: ((o.total_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €',
+                  lineas: (o.lineas_de_pedido || []).map(l => ({
+                    ...l,
+                    extras: Array.isArray(l.extras_json) ? l.extras_json : (typeof l.extras_json === 'string' ? JSON.parse(l.extras_json) : [])
+                  }))
+                }));
             } else if (error) {
               console.warn('Error cargando pedidos de Supabase:', error);
             }
@@ -693,12 +627,14 @@
         try {
           const stored = localStorage.getItem('fogon_orders');
           if (stored) {
-            localOrders = JSON.parse(stored);
-          } else if (!supaSuccess) {
-            localOrders = INITIAL_DEMO_ORDERS;
+            const parsed = JSON.parse(stored);
+            localOrders = (Array.isArray(parsed) ? parsed : []).filter(o => !FAKE_ORDER_IDS.has(o.id));
+            if (localOrders.length !== parsed.length) {
+              localStorage.setItem('fogon_orders', JSON.stringify(localOrders));
+            }
           }
         } catch (_) {
-          if (!supaSuccess) localOrders = INITIAL_DEMO_ORDERS;
+          localOrders = [];
         }
 
         const map = new Map();
