@@ -114,9 +114,96 @@
     .nav-actions {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       flex-shrink: 0;
       position: relative;
+    }
+
+    /* Botón animado de comanda en curso en la barra superior */
+    .btn-active-order-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 13px;
+      min-height: 38px;
+      border-radius: 9999px;
+      background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+      border: 1.5px solid #f97316;
+      color: #c2410c;
+      font-size: 0.82rem;
+      font-weight: 800;
+      text-decoration: none;
+      box-shadow: 0 2px 8px rgba(249, 115, 22, 0.22);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      white-space: nowrap;
+    }
+    .btn-active-order-pill:hover {
+      background: #ffedd5;
+      border-color: #ea580c;
+      color: #9a3412;
+      box-shadow: 0 4px 12px rgba(234, 88, 12, 0.35);
+      transform: translateY(-1px);
+    }
+    .active-pulse-wrapper {
+      position: relative;
+      width: 12px;
+      height: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .active-pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ea580c;
+      position: relative;
+      z-index: 2;
+    }
+    .active-pulse-wave {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: #ea580c;
+      opacity: 0.7;
+      animation: activeOrderPing 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+      z-index: 1;
+    }
+    @keyframes activeOrderPing {
+      0% {
+        transform: scale(0.9);
+        opacity: 0.85;
+      }
+      60% {
+        transform: scale(2.5);
+        opacity: 0;
+      }
+      100% {
+        transform: scale(2.5);
+        opacity: 0;
+      }
+    }
+    .active-order-icon-arrow {
+      transition: transform 0.2s ease;
+      flex-shrink: 0;
+    }
+    .btn-active-order-pill:hover .active-order-icon-arrow {
+      transform: translateX(2px);
+    }
+    @media (max-width: 480px) {
+      .btn-active-order-pill {
+        padding: 5px 9px;
+        gap: 5px;
+        font-size: 0.76rem;
+      }
+      .active-order-icon-arrow {
+        display: none;
+      }
     }
 
     .btn-nav-menu {
@@ -1293,6 +1380,15 @@
         <span class="rest-brand-name">La Fogoneta Smash Burgers</span>
       </a>
       <div class="nav-actions" id="top-nav-menu-container">
+        <a href="#" id="nav-active-order-btn" class="btn-active-order-pill" style="display:none;" title="Ver seguimiento de tu comanda en curso">
+          <span class="active-pulse-wrapper">
+            <span class="active-pulse-wave"></span>
+            <span class="active-pulse-dot"></span>
+          </span>
+          <span class="active-order-label">Pedido en curso</span>
+          <svg class="active-order-icon-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+
         <button type="button" class="btn-nav-menu" id="btn-top-menu" onclick="toggleTopNavMenu(event)" aria-expanded="false" aria-haspopup="true">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
           <span id="btn-top-menu-label">Menú</span>
@@ -1914,6 +2010,35 @@
       }).join('');
     }
 
+    function checkActiveOrderButton() {
+      const btn = document.getElementById('nav-active-order-btn');
+      if (!btn) return;
+
+      let orders = [];
+      try {
+        const raw = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
+        if (Array.isArray(raw)) {
+          orders = raw.filter(o => o && o.id !== 'ped_demo_initial' && o.id !== 'ped_07be7a128b85439aa2222e2155ac5a46');
+        }
+      } catch (_) {}
+
+      // Comprobar si hay algún pedido que no esté finalizado (recibido, cocina, listo)
+      const activeOrder = orders.find(o => {
+        if (!o || !o.tracking_token) return false;
+        const est = String(o.estado || 'recibido').toLowerCase().trim();
+        return est !== 'entregado' && est !== 'cancelado';
+      });
+
+      if (activeOrder && activeOrder.tracking_token) {
+        btn.href = `seguimiento.html?token=${encodeURIComponent(activeOrder.tracking_token)}`;
+        const num = activeOrder.numero_comanda ? `#${activeOrder.numero_comanda}` : '';
+        btn.setAttribute('title', `Ver seguimiento de tu pedido ${num} en preparación`);
+        btn.style.display = 'inline-flex';
+      } else {
+        btn.style.display = 'none';
+      }
+    }
+
     async function syncLocalOrdersWithSupabase() {
       let orders = [];
       try {
@@ -1923,13 +2048,26 @@
         }
       } catch (_) {}
 
-      if (!window.supabaseClient || orders.length === 0) {
+      if (orders.length === 0) {
+        checkActiveOrderButton();
         return orders;
       }
 
       const validOrders = [];
       await Promise.all(orders.map(async (o) => {
         if (!o.tracking_token) return;
+
+        // Comandas de reposición por incidencia (#incidencia-XXX / ped_inc_ / trk_inc_): conservar siempre
+        if (o.id && (o.id.startsWith('ped_inc_') || String(o.numero_comanda).startsWith('incidencia') || (o.tracking_token && o.tracking_token.startsWith('trk_inc_')))) {
+          validOrders.push(o);
+          return;
+        }
+
+        if (!window.supabaseClient) {
+          validOrders.push(o);
+          return;
+        }
+
         try {
           const { data: rpcOrder, error: rpcErr } = await window.supabaseClient.rpc('obtener_pedido_por_token', {
             p_token: o.tracking_token
@@ -1948,6 +2086,40 @@
         }
       }));
 
+      // Si hay comanda previa con incidencia resuelta mediante reenvío, recuperarla si aún no está en local
+      if (window.supabaseClient) {
+        for (const ord of validOrders) {
+          if (ord.tracking_token && !validOrders.some(x => x.id && x.id.startsWith('ped_inc_') && String(x.numero_comanda).includes(String(ord.numero_comanda)))) {
+            try {
+              const { data: chatData } = await window.supabaseClient.rpc('obtener_mensajes_chat_cliente', {
+                p_token: ord.tracking_token
+              });
+              const msgs = Array.isArray(chatData) ? chatData : (chatData && Array.isArray(chatData.mensajes) ? chatData.mensajes : []);
+              for (const m of msgs) {
+                const text = (m && (m.texto || m.mensaje)) || '';
+                if (text.startsWith('[INCIDENCIA_RESUELTA:') && text.includes(':reenvio:')) {
+                  const parts = text.replace('[INCIDENCIA_RESUELTA:', '').replace(']', '').split(':');
+                  if (parts[2]) {
+                    try {
+                      const extra = JSON.parse(decodeURIComponent(parts.slice(2).join(':')));
+                      if (extra && extra.id && !validOrders.some(v => v.id === extra.id)) {
+                        validOrders.unshift(extra);
+                      }
+                    } catch (_) {}
+                  }
+                } else if (text.startsWith('[INC_STATUS:')) {
+                  const stParts = text.replace('[INC_STATUS:', '').replace(']', '').split(':');
+                  const targetOrd = validOrders.find(v => v.id === stParts[0]);
+                  if (targetOrd && stParts[1]) {
+                    targetOrd.estado = stParts[1].trim();
+                  }
+                }
+              }
+            } catch (_) {}
+          }
+        }
+      }
+
       validOrders.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
       try {
         if (validOrders.length === 0) {
@@ -1956,11 +2128,24 @@
           localStorage.setItem('fogon_orders', JSON.stringify(validOrders));
         }
       } catch (_) {}
+
+      checkActiveOrderButton();
       return validOrders;
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+      checkActiveOrderButton();
       syncLocalOrdersWithSupabase();
+
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'fogon_orders') {
+          checkActiveOrderButton();
+        }
+      });
+
+      setInterval(() => {
+        checkActiveOrderButton();
+      }, 3000);
     });
 
     async function openPastOrdersModal() {
@@ -2090,6 +2275,7 @@
         let incMotivo = null;
         let incResuelta = false;
         let incResType = 'solucionado';
+        let activeModalResendOrder = null;
         const incMsgs = [];
 
         rows.forEach(m => {
@@ -2102,6 +2288,35 @@
             const content = raw.replace('[INCIDENCIA_RESUELTA:', '').replace(']', '').trim();
             const parts = content.split(':');
             if (parts[1]) incResType = parts[1].trim();
+            if (parts[2]) {
+              try {
+                const resendPayload = JSON.parse(decodeURIComponent(parts.slice(2).join(':')));
+                if (resendPayload && resendPayload.id) {
+                  let local = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
+                  local = local.filter(o => o.id !== resendPayload.id);
+                  local.unshift(resendPayload);
+                  localStorage.setItem('fogon_orders', JSON.stringify(local.slice(0, 100)));
+                  activeModalResendOrder = resendPayload;
+                  checkActiveOrderButton();
+                }
+              } catch (_) {}
+            }
+            return;
+          }
+
+          if (sender === 'restaurante' && raw.startsWith('[INC_STATUS:')) {
+            const stParts = raw.replace('[INC_STATUS:', '').replace(']', '').split(':');
+            if (stParts[0] && stParts[1]) {
+              try {
+                let local = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
+                const target = local.find(o => o.id === stParts[0]);
+                if (target) {
+                  target.estado = stParts[1].trim();
+                  localStorage.setItem('fogon_orders', JSON.stringify(local));
+                  checkActiveOrderButton();
+                }
+              } catch (_) {}
+            }
             return;
           }
 
@@ -2169,7 +2384,19 @@
           closedBanner.style.display = incResuelta ? 'block' : 'none';
           if (incResuelta) {
             if (incResType === 'reenvio') {
-              closedBanner.textContent = '✓ Incidencia resuelta: El restaurante te ha enviado una comanda nueva de reposición (#incidencia).';
+              let resend = activeModalResendOrder;
+              if (!resend) {
+                try {
+                  const local = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
+                  resend = local.find(o => o.id && o.id.startsWith('ped_inc_'));
+                } catch (_) {}
+              }
+              const num = (resend && resend.numero_comanda) ? '#' + resend.numero_comanda : '#incidencia';
+              const trk = resend && resend.tracking_token;
+              closedBanner.innerHTML = `
+                <div style="font-weight: 700; margin-bottom: 6px;">✓ Incidencia resuelta: El restaurante te ha enviado una comanda nueva de reposición (${escapeIncHtml(num)}). Ya está en preparación.</div>
+                ${trk ? `<a href="seguimiento.html?token=${encodeURIComponent(trk)}" style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 15px; background: #166534; color: #ffffff; border-radius: 8px; font-weight: 700; font-size: 0.84rem; text-decoration: none; margin-top: 5px; box-shadow: 0 2px 6px rgba(22, 101, 52, 0.25);">Ver nueva comanda en seguimiento →</a>` : ''}
+              `;
             } else if (incResType === 'reembolso') {
               closedBanner.textContent = '✓ Incidencia resuelta: El restaurante ha tramitado el reembolso de tu pedido.';
             } else {

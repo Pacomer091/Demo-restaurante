@@ -567,7 +567,17 @@
   
   <script>
     const urlParams = new URLSearchParams(window.location.search);
-    const ACTIVE_TOKEN = urlParams.get('token') || "trk_demo_sample_1";
+    let resolvedToken = urlParams.get('token');
+    if (!resolvedToken) {
+      try {
+        const local = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
+        if (Array.isArray(local) && local.length > 0) {
+          const act = local.find(o => o && o.tracking_token && o.estado !== 'entregado' && o.estado !== 'cancelado') || local[0];
+          if (act && act.tracking_token) resolvedToken = act.tracking_token;
+        }
+      } catch (_) {}
+    }
+    const ACTIVE_TOKEN = resolvedToken || "trk_demo_sample_1";
 
     function escapeHtml(str) {
       if (str === null || str === undefined) return '';
@@ -838,6 +848,7 @@
       let incMotivo = null;
       let incResuelta = false;
       let incResType = 'solucionado';
+      let activeResendOrder = null;
       const incMsgs = [];
 
       rows.forEach(m => {
@@ -850,6 +861,33 @@
           const content = raw.replace('[INCIDENCIA_RESUELTA:', '').replace(']', '').trim();
           const parts = content.split(':');
           if (parts[1]) incResType = parts[1].trim();
+          if (parts[2]) {
+            try {
+              const resendPayload = JSON.parse(decodeURIComponent(parts.slice(2).join(':')));
+              if (resendPayload && resendPayload.id) {
+                let local = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
+                local = local.filter(o => o.id !== resendPayload.id);
+                local.unshift(resendPayload);
+                localStorage.setItem('fogon_orders', JSON.stringify(local.slice(0, 100)));
+                activeResendOrder = resendPayload;
+              }
+            } catch (_) {}
+          }
+          return;
+        }
+
+        if (sender === 'restaurante' && raw.startsWith('[INC_STATUS:')) {
+          const stParts = raw.replace('[INC_STATUS:', '').replace(']', '').split(':');
+          if (stParts[0] && stParts[1]) {
+            try {
+              let local = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
+              const target = local.find(o => o.id === stParts[0]);
+              if (target) {
+                target.estado = stParts[1].trim();
+                localStorage.setItem('fogon_orders', JSON.stringify(local));
+              }
+            } catch (_) {}
+          }
           return;
         }
 
@@ -916,7 +954,19 @@
         closedBanner.style.display = incResuelta ? 'block' : 'none';
         if (incResuelta) {
           if (incResType === 'reenvio') {
-            closedBanner.textContent = '✓ Incidencia resuelta: El restaurante te ha enviado una comanda nueva de reposición (#incidencia).';
+            let resend = activeResendOrder;
+            if (!resend) {
+              try {
+                const local = JSON.parse(localStorage.getItem('fogon_orders') || '[]');
+                resend = local.find(o => o.id && o.id.startsWith('ped_inc_'));
+              } catch (_) {}
+            }
+            const num = (resend && resend.numero_comanda) ? '#' + resend.numero_comanda : '#incidencia';
+            const trk = resend && resend.tracking_token;
+            closedBanner.innerHTML = `
+              <div style="font-weight: 700; margin-bottom: 6px;">✓ Incidencia resuelta: El restaurante te ha enviado una comanda nueva de reposición (${escapeHtml(num)}). Ya está en preparación.</div>
+              ${trk ? `<a href="seguimiento.html?token=${encodeURIComponent(trk)}" style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 15px; background: #166534; color: #ffffff; border-radius: 8px; font-weight: 700; font-size: 0.84rem; text-decoration: none; margin-top: 5px; box-shadow: 0 2px 6px rgba(22, 101, 52, 0.25);">Ver nueva comanda en seguimiento →</a>` : ''}
+            `;
           } else if (incResType === 'reembolso') {
             closedBanner.textContent = '✓ Incidencia resuelta: El restaurante ha tramitado el reembolso de tu pedido.';
           } else {

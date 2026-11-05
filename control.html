@@ -1296,9 +1296,10 @@
       const { pedidoId, incidentId, order, inc } = CURRENT_RESOLVE_TARGET;
       closeResolveIncidentModal();
 
+      let createdResendOrder = null;
       if (actionType === 'reenvio') {
-        await handleResendOrder(order, inc);
-        await resolveIncident(pedidoId, incidentId, 'reenvio');
+        createdResendOrder = await handleResendOrder(order, inc);
+        await resolveIncident(pedidoId, incidentId, 'reenvio', createdResendOrder);
       } else if (actionType === 'reembolso') {
         await resolveIncident(pedidoId, incidentId, 'reembolso');
       } else {
@@ -1327,6 +1328,7 @@
 
       const newOrder = {
         id: newOrderId,
+        parentOrderId: originalOrder ? originalOrder.id : null,
         restaurante_id: REST_ID,
         numero_comanda: newComandaNum,
         tracking_token: newTrackingToken,
@@ -1366,17 +1368,26 @@
       // 3. Notificar y actualizar interfaz de inmediato
       renderOrders();
       showToast(`Creada comanda de reposición #${newComandaNum} en cocina`, 'success');
+      return newOrder;
     }
 
-    async function resolveIncident(pedidoId, incidentId, resolutionType = 'solucionado') {
+    async function resolveIncident(pedidoId, incidentId, resolutionType = 'solucionado', extraOrder = null) {
       markIncidentResolvedLocal(incidentId);
 
       let resolutionLabel = 'solucionado';
       let clientNotification = 'El restaurante ha dado por resuelta la incidencia.';
+      let extraPayload = '';
+
       if (resolutionType === 'reenvio') {
         resolutionLabel = 'reenvio';
         const ord = ordersList.find(o => o.id === pedidoId);
-        clientNotification = `El restaurante ha resuelto la incidencia enviándote una nueva comanda (#incidencia-${ord ? ord.numero_comanda : ''}). Ya está en cocina.`;
+        const numStr = (extraOrder && extraOrder.numero_comanda) || `incidencia-${ord ? ord.numero_comanda : ''}`;
+        clientNotification = `El restaurante ha resuelto la incidencia enviándote una nueva comanda (#${numStr}). Ya está en cocina.`;
+        if (extraOrder) {
+          try {
+            extraPayload = ':' + encodeURIComponent(JSON.stringify(extraOrder));
+          } catch (_) {}
+        }
       } else if (resolutionType === 'reembolso') {
         resolutionLabel = 'reembolso';
         clientNotification = 'El restaurante ha resuelto la incidencia tramitando el reembolso del pedido.';
@@ -1409,7 +1420,7 @@
             pedido_id: pedidoId,
             restaurante_id: REST_ID,
             remitente: 'restaurante',
-            texto: `[INCIDENCIA_RESUELTA:${incidentId}:${resolutionLabel}]`
+            texto: `[INCIDENCIA_RESUELTA:${incidentId}:${resolutionLabel}${extraPayload}]`
           });
 
           await window.supabaseClient.from('mensajes_chat').insert({
@@ -1691,11 +1702,23 @@
 
         if (window.supabaseClient) {
           try {
-            const { error } = await window.supabaseClient
-              .from('pedidos')
-              .update({ estado: nuevoEstado })
-              .eq('id', orderId);
-            if (error) console.warn('Error actualizando estado en Supabase:', error);
+            if (orderId.startsWith('ped_inc_')) {
+              const targetIncOrder = ordersList.find(o => o.id === orderId);
+              if (targetIncOrder && targetIncOrder.parentOrderId) {
+                await window.supabaseClient.from('mensajes_chat').insert({
+                  pedido_id: targetIncOrder.parentOrderId,
+                  restaurante_id: REST_ID,
+                  remitente: 'restaurante',
+                  texto: `[INC_STATUS:${orderId}:${nuevoEstado}]`
+                });
+              }
+            } else {
+              const { error } = await window.supabaseClient
+                .from('pedidos')
+                .update({ estado: nuevoEstado })
+                .eq('id', orderId);
+              if (error) console.warn('Error actualizando estado en Supabase:', error);
+            }
           } catch (e) {
             console.warn('Excepción actualizando estado:', e);
           } finally {
