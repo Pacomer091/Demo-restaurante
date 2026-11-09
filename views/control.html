@@ -1640,6 +1640,25 @@
         const isStatic = Boolean(window.supabaseClient) || window.location.pathname.endsWith('.html') || window.location.hostname.includes('github.io');
         const trackingHref = isStatic ? `seguimiento.html?token=${order.tracking_token}` : `/pedido/${order.tracking_token}`;
 
+        // Detección de cupón canjeado en notas o comanda
+        let couponInfo = null;
+        let cleanNotes = order.notas_cliente || '';
+        const cupMatch = cleanNotes.match(/\[CUPÓN CANJEADO:\s*([^\|\]]+)(?:\s*\|\s*DESC_CENTS:(\d+))?\]/i);
+        if (cupMatch) {
+          couponInfo = {
+            nombre: cupMatch[1].trim(),
+            descuentoCents: parseInt(cupMatch[2] || '0', 10)
+          };
+          cleanNotes = cleanNotes.replace(/\[CUPÓN CANJEADO:[^\]]+\]/gi, '').trim();
+          if (cleanNotes.endsWith('|')) cleanNotes = cleanNotes.slice(0, -1).trim();
+          if (cleanNotes.startsWith('|')) cleanNotes = cleanNotes.slice(1).trim();
+        }
+
+        const effectiveTotalCents = (order.descuento_cents !== undefined)
+          ? order.total_cents
+          : (couponInfo ? Math.max(0, (order.total_cents || 0) - couponInfo.descuentoCents) : (order.total_cents || 0));
+        const effectiveTotalFormatted = ((effectiveTotalCents) / 100).toFixed(2).replace('.', ',') + ' €';
+
         const incs = order.incidencias || [];
         let incidentsHtml = '';
         if (incs.length > 0) {
@@ -1754,7 +1773,13 @@
             <div class="client-details">
               <div class="client-name">${escapeHtml(order.cliente_nombre)} • <span class="client-phone">${escapeHtml(order.cliente_telefono)}</span></div>
               ${order.direccion_entrega ? `<div class="client-address">Entrega: ${escapeHtml(order.direccion_entrega)}</div>` : ''}
-              ${order.notas_cliente ? `<div class="client-notes">Nota: "${escapeHtml(order.notas_cliente)}"</div>` : ''}
+              ${cleanNotes ? `<div class="client-notes">Nota: "${escapeHtml(cleanNotes)}"</div>` : ''}
+              ${couponInfo ? `
+                <div style="background:#ecfdf5; border:1.5px dashed #10b981; border-radius:8px; padding:6px 10px; margin-top:6px; display:flex; align-items:center; gap:6px; font-size:0.78rem; color:#065f46; font-weight:800;">
+                  <span>🎟️ Recompensa canjeada:</span>
+                  <span><strong>${escapeHtml(couponInfo.nombre)}</strong> (-${((couponInfo.descuentoCents || 0) / 100).toFixed(2).replace('.', ',')} €)</span>
+                </div>
+              ` : ''}
             </div>
 
             <ul class="order-items-list">
@@ -1763,7 +1788,7 @@
 
             <div class="order-total-bar">
               <span style="color:var(--text-muted); font-size:0.82rem;">Total comanda</span>
-              <span style="color:var(--brand-orange); font-size:1.1rem;">${order.total_formatted || ((order.total_cents||0)/100).toFixed(2).replace('.', ',') + ' €'}</span>
+              <span style="color:var(--brand-orange); font-size:1.1rem;">${effectiveTotalFormatted}</span>
             </div>
 
             ${incidentsHtml}

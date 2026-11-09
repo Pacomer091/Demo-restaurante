@@ -470,6 +470,18 @@ function updateCartQty(uniqueKey, delta) {
   updateCartUI();
 }
 
+// Estado global de cupones en la sesión del cliente
+window.selectedCouponId = null;
+
+function selectCheckoutCoupon(couponId) {
+  if (window.selectedCouponId === couponId) {
+    window.selectedCouponId = null;
+  } else {
+    window.selectedCouponId = couponId;
+  }
+  updateCartUI();
+}
+
 function updateCartUI() {
   const totalCount = cart.reduce((sum, item) => sum + item.cantidad, 0);
 
@@ -485,9 +497,26 @@ function updateCartUI() {
     ? RESTAURANTE.costeEnvioCents
     : 0;
 
-  const totalCents = subtotalCents + shippingCents;
+  // Cupones y descuento aplicable
+  let discountCents = 0;
+  let activeCoupon = null;
+  const availableCoupons = (typeof getCustomerCoupons === 'function')
+    ? getCustomerCoupons().filter(c => !c.usado)
+    : [];
 
-  // Validación de pedido mínimo para domicilio
+  if (window.selectedCouponId) {
+    activeCoupon = availableCoupons.find(c => c.id === window.selectedCouponId);
+    if (activeCoupon) {
+      discountCents = Math.min(activeCoupon.valor_cents, subtotalCents);
+    } else {
+      window.selectedCouponId = null;
+    }
+  }
+
+  const rawTotalCents = subtotalCents + shippingCents;
+  const finalTotalCents = Math.max(0, rawTotalCents - discountCents);
+
+  // Validación de pedido mínimo para domicilio (se valida contra subtotal antes de cupón de regalo)
   const minRequiredCents = RESTAURANTE.pedidoMinimoCents;
   const isDelivery = currentServiceType === 'delivery';
   const minReached = !isDelivery || (subtotalCents >= minRequiredCents);
@@ -566,8 +595,23 @@ function updateCartUI() {
   document.getElementById('desktop-shipping')?.replaceChildren(document.createTextNode(formatCents(shippingCents)));
   const shipRow = document.getElementById('desktop-delivery-row');
   if (shipRow) shipRow.style.display = isDelivery ? 'flex' : 'none';
-  document.getElementById('desktop-total')?.replaceChildren(document.createTextNode(formatCents(totalCents)));
-  document.getElementById('desktop-btn-total')?.replaceChildren(document.createTextNode(formatCents(totalCents)));
+
+  // Descuento en Desktop
+  const dDiscountRow = document.getElementById('desktop-discount-row');
+  const dDiscountVal = document.getElementById('desktop-discount-val');
+  const dDiscountLbl = document.getElementById('desktop-discount-label');
+  if (dDiscountRow && dDiscountVal) {
+    if (discountCents > 0 && activeCoupon) {
+      dDiscountRow.style.display = 'flex';
+      if (dDiscountLbl) dDiscountLbl.textContent = `Cupón (${activeCoupon.nombre})`;
+      dDiscountVal.textContent = `-${formatCents(discountCents)}`;
+    } else {
+      dDiscountRow.style.display = 'none';
+    }
+  }
+
+  document.getElementById('desktop-total')?.replaceChildren(document.createTextNode(formatCents(finalTotalCents)));
+  document.getElementById('desktop-btn-total')?.replaceChildren(document.createTextNode(formatCents(finalTotalCents)));
   const btnDesktopCheckout = document.getElementById('btn-desktop-checkout');
   if (btnDesktopCheckout) btnDesktopCheckout.disabled = !(totalCount > 0 && minReached);
 
@@ -617,18 +661,62 @@ function updateCartUI() {
 
   if (mobileCount) mobileCount.textContent = totalCount;
   if (mobileLabel) mobileLabel.textContent = `Ver pedido (${totalCount})`;
-  if (mobileTotal) mobileTotal.textContent = formatCents(totalCents);
+  if (mobileTotal) mobileTotal.textContent = formatCents(finalTotalCents);
   
   if (mobileBtn) {
     mobileBtn.disabled = totalCount === 0;
   }
 
-  // 6. Totales en Modal
+  // 6. Totales y Cupones en Modal Checkout
+  const couponsSec = document.getElementById('checkout-coupons-section');
+  const couponsList = document.getElementById('checkout-coupons-list');
+  const couponsBadge = document.getElementById('checkout-coupons-count-badge');
+
+  if (couponsSec && couponsList) {
+    if (availableCoupons.length > 0) {
+      couponsSec.style.display = 'block';
+      if (couponsBadge) {
+        couponsBadge.textContent = `${availableCoupons.length} disponible${availableCoupons.length === 1 ? '' : 's'}`;
+      }
+      couponsList.innerHTML = availableCoupons.map(c => {
+        const isSel = (window.selectedCouponId === c.id);
+        const valFmt = ((c.valor_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €';
+        return `
+          <div class="checkout-coupon-item ${isSel ? 'selected' : ''}" onclick="selectCheckoutCoupon('${c.id}')">
+            <div class="checkout-coupon-radio"></div>
+            <img src="${c.imagen_url}" alt="" style="width:34px; height:34px; border-radius:7px; object-fit:cover; border:1px solid #e2e8f0;">
+            <div style="flex:1; min-width:0;">
+              <div style="font-size:0.83rem; font-weight:800; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(c.nombre)}</div>
+              <div style="font-size:0.72rem; color:#b45309; font-weight:700;">Descuento: <strong>-${valFmt}</strong> • Cód: <span style="font-family:monospace;">${escapeHtml(c.codigo)}</span></div>
+            </div>
+            ${isSel ? '<span style="font-size:0.72rem; font-weight:800; color:#10b981; background:#dcfce7; padding:2px 7px; border-radius:99px;">Aplicado</span>' : '<span style="font-size:0.72rem; font-weight:700; color:#64748b;">Seleccionar</span>'}
+          </div>
+        `;
+      }).join('');
+    } else {
+      couponsSec.style.display = 'none';
+    }
+  }
+
+  // Descuento en Modal
+  const mDiscountRow = document.getElementById('modal-discount-row');
+  const mDiscountVal = document.getElementById('modal-discount-val');
+  const mDiscountLbl = document.getElementById('modal-discount-label');
+  if (mDiscountRow && mDiscountVal) {
+    if (discountCents > 0 && activeCoupon) {
+      mDiscountRow.style.display = 'flex';
+      if (mDiscountLbl) mDiscountLbl.textContent = `Cupón (${activeCoupon.nombre})`;
+      mDiscountVal.textContent = `-${formatCents(discountCents)}`;
+    } else {
+      mDiscountRow.style.display = 'none';
+    }
+  }
+
   document.getElementById('modal-subtotal-val')?.replaceChildren(document.createTextNode(formatCents(subtotalCents)));
   document.getElementById('modal-shipping-val')?.replaceChildren(document.createTextNode(formatCents(shippingCents)));
   const mShipRow = document.getElementById('modal-shipping-row');
   if (mShipRow) mShipRow.style.display = isDelivery ? 'flex' : 'none';
-  document.getElementById('modal-total-val')?.replaceChildren(document.createTextNode(formatCents(totalCents)));
+  document.getElementById('modal-total-val')?.replaceChildren(document.createTextNode(formatCents(finalTotalCents)));
 
   const btnSubmitOrder = document.getElementById('btn-submit-order');
   if (btnSubmitOrder) {
@@ -759,7 +847,23 @@ async function handleFormCheckout(e) {
       });
 
       const envioCents = currentServiceType === 'delivery' ? (RESTAURANTE.costeEnvioCents || 250) : 0;
-      const totalCents = subtotalCents + envioCents;
+      const rawTotalCents = subtotalCents + envioCents;
+
+      // Aplicar cupón de descuento activo si lo hay
+      let discountCents = 0;
+      let appliedCoupon = null;
+      if (window.selectedCouponId && typeof getCustomerCoupons === 'function') {
+        const availableCoupons = getCustomerCoupons().filter(c => !c.usado);
+        appliedCoupon = availableCoupons.find(c => c.id === window.selectedCouponId);
+        if (appliedCoupon) {
+          discountCents = Math.min(appliedCoupon.valor_cents, subtotalCents);
+        }
+      }
+
+      const finalTotalCents = Math.max(0, rawTotalCents - discountCents);
+      const fullNotasCliente = appliedCoupon
+        ? ((notasCliente ? (notasCliente + ' | ') : '') + `[CUPÓN CANJEADO: ${appliedCoupon.nombre} (-${formatCents(discountCents)}) | DESC_CENTS:${discountCents}]`)
+        : (notasCliente || null);
 
       let localOrders = [];
       try {
@@ -779,13 +883,15 @@ async function handleFormCheckout(e) {
         direccion_entrega: direccionEntrega,
         cliente_nombre: clienteNombre,
         cliente_telefono: clienteTelefono,
-        notas_cliente: notasCliente,
+        notas_cliente: fullNotasCliente,
         subtotal_cents: subtotalCents,
         gastos_envio_cents: envioCents,
-        total_cents: totalCents,
+        descuento_cents: discountCents,
+        total_cents: finalTotalCents,
         subtotal_formatted: formatCents(subtotalCents),
         gastos_envio_formatted: formatCents(envioCents),
-        total_formatted: formatCents(totalCents),
+        total_formatted: formatCents(finalTotalCents),
+        cupon_canjeado: appliedCoupon,
         metodo_pago: selectedPayment,
         estado: 'recibido',
         created_at: new Date().toISOString(),
@@ -813,7 +919,7 @@ async function handleFormCheckout(e) {
             p_cliente_telefono: clienteTelefono,
             p_cliente_email: customerEmail,
             p_direccion_entrega: direccionEntrega,
-            p_notas_cliente: notasCliente || null,
+            p_notas_cliente: fullNotasCliente,
             p_metodo_pago: selectedPayment,
             p_idempotency_key: idempotencyKey,
             p_lineas: linesPayload
@@ -841,6 +947,21 @@ async function handleFormCheckout(e) {
           console.warn('Supabase crear_pedido error:', supaErr);
         }
       }
+
+      // Marcar el cupón como canjeado si fue aplicado
+      if (appliedCoupon && typeof getCustomerCoupons === 'function' && typeof saveCustomerCoupons === 'function') {
+        try {
+          const allCoupons = getCustomerCoupons();
+          const targetCup = allCoupons.find(c => c.id === appliedCoupon.id);
+          if (targetCup) {
+            targetCup.usado = true;
+            targetCup.usado_en = new Date().toISOString();
+            targetCup.pedido_id = orderObj.id;
+            saveCustomerCoupons(allCoupons, true);
+          }
+        } catch (_) {}
+      }
+      window.selectedCouponId = null;
 
       localOrders.unshift(orderObj);
       localStorage.setItem('fogon_orders', JSON.stringify(localOrders.slice(0, 50)));

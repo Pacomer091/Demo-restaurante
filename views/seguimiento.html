@@ -475,6 +475,10 @@
           <span>Gastos de entrega</span>
           <span id="display-envio">2,50 €</span>
         </div>
+        <div class="breakdown-row" id="row-descuento" style="display:none; color:#059669; font-weight:700;">
+          <span id="display-descuento-label">Descuento cupón</span>
+          <span id="display-descuento">-0,00 €</span>
+        </div>
         <div class="breakdown-row total">
           <span>Total</span>
           <span id="display-total" style="color:var(--brand-orange);">24,90 €</span>
@@ -609,11 +613,44 @@
       setElText(['display-direccion', 'display-address'], order.direccion_entrega || 'Recogida en el local');
       setElText(['display-cliente', 'display-name'], order.cliente_nombre || 'Cliente');
       setElText(['display-telefono', 'display-phone'], order.cliente_telefono || '-');
-      setElText(['display-notas', 'display-notes'], order.notas_cliente || 'Sin notas especiales');
+
+      // Detección de cupón en notas
+      let couponInfo = null;
+      let cleanNotes = order.notas_cliente || '';
+      const cupMatch = cleanNotes.match(/\[CUPÓN CANJEADO:\s*([^\|\]]+)(?:\s*\|\s*DESC_CENTS:(\d+))?\]/i);
+      if (cupMatch) {
+        couponInfo = {
+          nombre: cupMatch[1].trim(),
+          descuentoCents: parseInt(cupMatch[2] || '0', 10)
+        };
+        cleanNotes = cleanNotes.replace(/\[CUPÓN CANJEADO:[^\]]+\]/gi, '').trim();
+        if (cleanNotes.endsWith('|')) cleanNotes = cleanNotes.slice(0, -1).trim();
+        if (cleanNotes.startsWith('|')) cleanNotes = cleanNotes.slice(1).trim();
+      }
+
+      setElText(['display-notas', 'display-notes'], cleanNotes || 'Sin notas especiales');
+
+      const descRow = document.getElementById('row-descuento');
+      const descVal = document.getElementById('display-descuento');
+      const descLbl = document.getElementById('display-descuento-label');
+      const discCents = order.descuento_cents !== undefined ? order.descuento_cents : (couponInfo ? couponInfo.descuentoCents : 0);
+
+      if (descRow && descVal) {
+        if (discCents > 0) {
+          descRow.style.display = 'flex';
+          if (descLbl) descLbl.textContent = `Cupón aplicado (${couponInfo ? couponInfo.nombre : 'Recompensa'})`;
+          descVal.textContent = `-${((discCents) / 100).toFixed(2).replace('.', ',')} €`;
+        } else {
+          descRow.style.display = 'none';
+        }
+      }
 
       const subFormatted = order.subtotal_formatted || ((order.subtotal_cents||0)/100).toFixed(2).replace('.', ',') + ' €';
       const envioFormatted = order.gastos_envio_formatted || ((order.gastos_envio_cents||0)/100).toFixed(2).replace('.', ',') + ' €';
-      const totalFormatted = order.total_formatted || ((order.total_cents||0)/100).toFixed(2).replace('.', ',') + ' €';
+      const effectiveTotalCents = (order.descuento_cents !== undefined)
+        ? order.total_cents
+        : (couponInfo ? Math.max(0, (order.total_cents || 0) - couponInfo.descuentoCents) : (order.total_cents || 0));
+      const totalFormatted = ((effectiveTotalCents) / 100).toFixed(2).replace('.', ',') + ' €';
 
       setElText(['display-subtotal'], subFormatted);
       setElText(['display-envio'], envioFormatted);

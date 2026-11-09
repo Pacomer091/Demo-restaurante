@@ -1666,6 +1666,368 @@
       align-items: center;
       gap: 6px;
     }
+
+    /* =========================================================================
+       RULETA DE BIENVENIDA ESTILO CS:GO LOOTBOX Y ÁREA DE CUPONES
+       ========================================================================= */
+    .lootbox-modal-card {
+      max-width: 560px !important;
+      background: linear-gradient(165deg, #0b0f19 0%, #151d2e 100%) !important;
+      color: #ffffff !important;
+      border: 1px solid rgba(255, 255, 255, 0.14) !important;
+      border-radius: 24px !important;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75), 0 0 40px rgba(255, 85, 0, 0.18) !important;
+      overflow: hidden;
+    }
+
+    .lootbox-header-glow {
+      text-align: center;
+      padding: 6px 10px 2px;
+      position: relative;
+    }
+
+    .lootbox-badge-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: rgba(255, 85, 0, 0.18);
+      border: 1px solid rgba(255, 138, 0, 0.45);
+      color: #ff9a3c;
+      font-size: 0.72rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+
+    .lootbox-title {
+      font-size: 1.35rem;
+      font-weight: 900;
+      color: #ffffff;
+      margin: 0 0 4px 0;
+      letter-spacing: -0.02em;
+    }
+
+    .lootbox-subtitle {
+      font-size: 0.83rem;
+      color: #94a3b8;
+      margin: 0;
+      line-height: 1.4;
+    }
+
+    .csgo-roller-viewport {
+      position: relative;
+      width: 100%;
+      height: 158px;
+      background: #070a12;
+      border-radius: 16px;
+      border: 2px solid #1e293b;
+      overflow: hidden;
+      box-shadow: inset 0 0 28px rgba(0, 0, 0, 0.9);
+      margin: 10px 0 6px;
+      user-select: none;
+    }
+
+    /* Sombra viñeta lateral estilo CS:GO */
+    .csgo-roller-viewport::before,
+    .csgo-roller-viewport::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 58px;
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    .csgo-roller-viewport::before {
+      left: 0;
+      background: linear-gradient(90deg, #070a12 0%, transparent 100%);
+    }
+
+    .csgo-roller-viewport::after {
+      right: 0;
+      background: linear-gradient(-90deg, #070a12 0%, transparent 100%);
+    }
+
+    /* Aguja láser central CS:GO */
+    .csgo-center-marker {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 3px;
+      transform: translateX(-50%);
+      background: linear-gradient(180deg, #fbbf24 0%, #ff5500 50%, #fbbf24 100%);
+      box-shadow: 0 0 12px #fbbf24, 0 0 22px #ff5500;
+      z-index: 6;
+      pointer-events: none;
+    }
+
+    .csgo-center-marker::before,
+    .csgo-center-marker::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+    }
+
+    .csgo-center-marker::before {
+      top: 0;
+      border-top: 10px solid #fbbf24;
+    }
+
+    .csgo-center-marker::after {
+      bottom: 0;
+      border-bottom: 10px solid #fbbf24;
+    }
+
+    .csgo-roller-track {
+      display: flex;
+      align-items: center;
+      height: 100%;
+      gap: 8px;
+      padding: 0 12px;
+      will-change: transform;
+    }
+
+    .csgo-item-card {
+      width: 122px;
+      height: 132px;
+      flex-shrink: 0;
+      background: linear-gradient(180deg, #161f33 0%, #0f1624 100%);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-bottom: 4px solid #3b82f6;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 8px 8px;
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    .csgo-item-card.rarity-common {
+      border-bottom-color: #3b82f6;
+      background: radial-gradient(circle at 50% 95%, rgba(59, 130, 246, 0.22), #111827 72%);
+    }
+
+    .csgo-item-card.rarity-rare {
+      border-bottom-color: #a855f7;
+      background: radial-gradient(circle at 50% 95%, rgba(168, 85, 247, 0.25), #111827 72%);
+    }
+
+    .csgo-item-card.rarity-epic {
+      border-bottom-color: #ec4899;
+      background: radial-gradient(circle at 50% 95%, rgba(236, 72, 153, 0.28), #111827 72%);
+    }
+
+    .csgo-item-card.rarity-legendary {
+      border-bottom-color: #f59e0b;
+      background: radial-gradient(circle at 50% 95%, rgba(245, 158, 11, 0.35), #111827 72%);
+      box-shadow: inset 0 0 15px rgba(245, 158, 11, 0.18);
+    }
+
+    .csgo-item-rarity-tag {
+      font-size: 0.6rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 1px 6px;
+      border-radius: 99px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #cbd5e1;
+    }
+
+    .csgo-item-img {
+      width: 56px;
+      height: 56px;
+      border-radius: 10px;
+      object-fit: cover;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45);
+    }
+
+    .csgo-item-name {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: #f8fafc;
+      line-height: 1.18;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .csgo-odds-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+
+    .csgo-odd-pill {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 9px;
+      padding: 6px 4px;
+      text-align: center;
+      font-size: 0.68rem;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    .csgo-odd-pill strong {
+      display: block;
+      font-size: 0.76rem;
+      font-weight: 900;
+    }
+
+    .lootbox-winner-banner {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 14px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.16) 0%, rgba(5, 150, 105, 0.28) 100%);
+      border: 1.5px solid rgba(52, 211, 153, 0.5);
+      gap: 6px;
+      animation: popInWinner 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes popInWinner {
+      from { transform: scale(0.92); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    /* TARJETAS DE CUPONES EN PERFIL Y CHECKOUT */
+    .profile-coupons-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .coupon-ticket-card {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #fffbeb 0%, #fff7ed 100%);
+      border: 1.5px dashed #f59e0b;
+      position: relative;
+    }
+
+    .coupon-ticket-card.used {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      opacity: 0.65;
+    }
+
+    .coupon-ticket-img {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      object-fit: cover;
+      flex-shrink: 0;
+      border: 1px solid rgba(245, 158, 11, 0.35);
+    }
+
+    .coupon-ticket-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .coupon-ticket-title {
+      font-size: 0.86rem;
+      font-weight: 900;
+      color: #0f172a;
+      margin: 0 0 2px 0;
+    }
+
+    .coupon-ticket-meta {
+      font-size: 0.74rem;
+      color: #b45309;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .coupon-code-badge {
+      background: #fef3c7;
+      border: 1px solid #fcd34d;
+      color: #92400e;
+      font-family: monospace;
+      font-size: 0.72rem;
+      font-weight: 900;
+      padding: 1px 6px;
+      border-radius: 5px;
+    }
+
+    .checkout-coupon-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 12px;
+      background: #ffffff;
+      border: 1.5px solid #e2e8f0;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+
+    .checkout-coupon-item:hover {
+      border-color: #cbd5e1;
+      background: #f8fafc;
+    }
+
+    .checkout-coupon-item.selected {
+      border-color: #10b981;
+      background: #f0fdf4;
+      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+    }
+
+    .checkout-coupon-radio {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid #cbd5e1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.15s ease;
+    }
+
+    .checkout-coupon-item.selected .checkout-coupon-radio {
+      border-color: #10b981;
+      background: #10b981;
+    }
+
+    .checkout-coupon-radio::after {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #ffffff;
+      opacity: 0;
+      transform: scale(0);
+      transition: all 0.15s ease;
+    }
+
+    .checkout-coupon-item.selected .checkout-coupon-radio::after {
+      opacity: 1;
+      transform: scale(1);
+    }
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1860,6 +2222,10 @@
           <span>Subtotal</span>
           <span id="desktop-subtotal">0,00 €</span>
         </div>
+        <div class="cart-total-row" id="desktop-discount-row" style="display:none; color:#059669; font-weight:700;">
+          <span id="desktop-discount-label">Cupón aplicado</span>
+          <span id="desktop-discount-val">-0,00 €</span>
+        </div>
         <div class="cart-total-row" id="desktop-delivery-row">
           <span>Gastos de entrega</span>
           <span id="desktop-shipping">2,50 €</span>
@@ -1998,6 +2364,20 @@
             <input type="text" id="cust-notes" class="form-input" placeholder="Alergias, timbre estropeado, llamar al llegar...">
           </div>
 
+          <!-- Selector de Cupones en Checkout -->
+          <div id="checkout-coupons-section" style="display:none; margin-bottom:12px;">
+            <label class="form-label" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+              <span style="display:flex; align-items:center; gap:6px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+                <span>Cupones disponibles</span>
+              </span>
+              <span id="checkout-coupons-count-badge" style="font-size:0.72rem; font-weight:800; color:#059669; background:#dcfce7; padding:1px 7px; border-radius:99px;">0 disponibles</span>
+            </label>
+            <div id="checkout-coupons-list" style="display:flex; flex-direction:column; gap:6px;">
+              <!-- Rellenado dinámicamente con cupones -->
+            </div>
+          </div>
+
           <!-- Selector de Método de Pago -->
           <div class="form-group">
             <label class="form-label">Método de pago (simulado)</label>
@@ -2019,6 +2399,10 @@
             <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
               <span>Subtotal comanda</span>
               <strong id="modal-subtotal-val">0,00 €</strong>
+            </div>
+            <div style="display:none; justify-content:space-between; margin-bottom:4px; color:#059669; font-weight:700;" id="modal-discount-row">
+              <span id="modal-discount-label">Cupón aplicado</span>
+              <strong id="modal-discount-val">-0,00 €</strong>
             </div>
             <div style="display:flex; justify-content:space-between; margin-bottom:4px;" id="modal-shipping-row">
               <span>Gastos de entrega</span>
@@ -2198,6 +2582,38 @@
             </button>
           </div>
 
+          <!-- Mis Cupones y Recompensas (Lootbox Counter) -->
+          <div id="profile-coupons-section" style="display:flex; flex-direction:column; gap:8px;">
+            <div class="profile-section-heading" style="justify-content:space-between;">
+              <div style="display:flex; align-items:center; gap:6px;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+                <span>Mis Cupones y Recompensas</span>
+              </div>
+              <span id="profile-coupons-count-badge" style="font-size:0.7rem; font-weight:800; padding:2px 7px; border-radius:99px; background:#fef3c7; color:#92400e;">0 disponibles</span>
+            </div>
+
+            <!-- Banner Ruleta CS:GO Pendiente de Girar -->
+            <div id="profile-lootbox-pending-banner" style="display:none; background:linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); border:1.5px solid #a855f7; border-radius:12px; padding:12px; color:#ffffff; align-items:center; justify-content:space-between; gap:10px; box-shadow:0 4px 15px rgba(168, 85, 247, 0.2);">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span style="font-size:1.7rem; line-height:1;">🎁</span>
+                <div>
+                  <strong style="display:block; font-size:0.86rem; color:#f8fafc;">¡Ruleta de Bienvenida Disponible!</strong>
+                  <span style="font-size:0.74rem; color:#cbd5e1;">Abre tu caja estilo CS:GO y gana salsas, bebidas, postres o burger.</span>
+                </div>
+              </div>
+              <button type="button" onclick="closeCustomerAuthModal(); openWelcomeLootboxModal();" class="btn btn-primary" style="white-space:nowrap; padding:7px 12px; font-size:0.8rem; font-weight:900; background:linear-gradient(135deg, #ff5500 0%, #f59e0b 100%); border:none; box-shadow:0 4px 12px rgba(255, 85, 0, 0.4);">
+                ¡Girar Ahora!
+              </button>
+            </div>
+
+            <!-- Contenedor con lista de cupones -->
+            <div id="profile-coupons-container" class="profile-coupons-list">
+              <div style="font-size:0.82rem; color:var(--text-muted); background:#f8fafc; border:1px dashed #cbd5e1; border-radius:10px; padding:12px; text-align:center;">
+                No tienes cupones activos actualmente.
+              </div>
+            </div>
+          </div>
+
           <!-- Formulario de Datos de Entrega Guardados -->
           <div class="profile-section-heading">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
@@ -2315,6 +2731,85 @@
           <div id="modal-inc-closed-banner" style="display:none; padding:10px 12px; border-radius:8px; background:#dcfce7; border:1px solid #bbf7d0; color:#166534; font-weight:800; font-size:0.84rem; text-align:center;">
             ✓ El restaurante ha cerrado y dado por resuelta esta incidencia.
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 12. MODAL: RULETA DE BIENVENIDA ESTILO CS:GO LOOTBOX -->
+  <div class="modal-overlay" id="lootbox-modal" onclick="if(event.target.id==='lootbox-modal') closeWelcomeLootboxModal()">
+    <div class="modal-card lootbox-modal-card">
+      <div class="sheet-drag-handle" style="background:rgba(255,255,255,0.2);"></div>
+      <div class="modal-header" style="border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:12px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="width:8px; height:8px; border-radius:50%; background:#f59e0b; box-shadow:0 0 10px #f59e0b; display:inline-block;"></span>
+          <h3 class="modal-title" style="color:#ffffff; font-size:1.05rem;">Caja de Bienvenida • Fogonazo</h3>
+        </div>
+        <button onclick="closeWelcomeLootboxModal()" class="btn-close-modal" aria-label="Cerrar" style="color:#94a3b8;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <div class="modal-body" style="gap:14px; padding-top:12px;">
+        <div class="lootbox-header-glow">
+          <div class="lootbox-badge-tag">
+            <span>🎁 Regalo de Bienvenida Exclusivo</span>
+          </div>
+          <h4 class="lootbox-title">Caja Misteriosa La Fogoneta</h4>
+          <p class="lootbox-subtitle">Gira el rodillo estilo CS:GO y consigue una recompensa directa canjeable en tu próximo pedido.</p>
+        </div>
+
+        <!-- Barra de Probabilidades Reales Rentables -->
+        <div class="csgo-odds-bar">
+          <div class="csgo-odd-pill" style="border-color:rgba(59, 130, 246, 0.4);">
+            <span style="color:#60a5fa;">75% Común</span>
+            <strong style="color:#93c5fd;">Salsa Secreta</strong>
+          </div>
+          <div class="csgo-odd-pill" style="border-color:rgba(168, 85, 247, 0.4);">
+            <span style="color:#c084fc;">18% Raro</span>
+            <strong style="color:#e9d5ff;">Coca-Cola 33cl</strong>
+          </div>
+          <div class="csgo-odd-pill" style="border-color:rgba(236, 72, 153, 0.4);">
+            <span style="color:#f472b6;">6% Épico</span>
+            <strong style="color:#fbcfe8;">Tarta Queso</strong>
+          </div>
+          <div class="csgo-odd-pill" style="border-color:rgba(245, 158, 11, 0.5); background:rgba(245, 158, 11, 0.08);">
+            <span style="color:#fbbf24;">1% Legendario</span>
+            <strong style="color:#fef08a;">Smash Burger</strong>
+          </div>
+        </div>
+
+        <!-- Viewport del Rodillo CS:GO -->
+        <div class="csgo-roller-viewport" id="csgo-roller-viewport">
+          <div class="csgo-center-marker"></div>
+          <div class="csgo-roller-track" id="csgo-roller-track">
+            <!-- Rellenado con 60 cartas dinámicas para el giro -->
+          </div>
+        </div>
+
+        <!-- Banner de Premio Ganado (Aparece tras frenar) -->
+        <div class="lootbox-winner-banner" id="lootbox-winner-banner">
+          <div style="font-size:0.75rem; font-weight:900; text-transform:uppercase; letter-spacing:0.08em; color:#34d399;" id="winner-rarity-label">¡Premio desbloqueado!</div>
+          <div style="display:flex; align-items:center; gap:12px; margin:4px 0;">
+            <img id="winner-img" src="" alt="" style="width:52px; height:52px; border-radius:10px; object-fit:cover; border:2px solid #34d399;">
+            <div style="text-align:left;">
+              <h5 id="winner-title" style="margin:0; font-size:1.05rem; font-weight:900; color:#ffffff;">Nombre del plato</h5>
+              <div style="font-size:0.8rem; color:#a7f3d0;" id="winner-desc">Valorado en 0,00 € • 100% GRATIS</div>
+            </div>
+          </div>
+          <div style="background:rgba(0,0,0,0.3); padding:6px 12px; border-radius:8px; font-family:monospace; font-size:0.85rem; font-weight:800; color:#fde047; border:1px dashed rgba(253,224,71,0.5);" id="winner-code">
+            CUPÓN: FOGON-XXXX
+          </div>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div style="display:flex; flex-direction:column; gap:8px; margin-top:4px;">
+          <button type="button" id="btn-spin-lootbox" onclick="spinWelcomeLootbox()" class="btn btn-primary" style="width:100%; min-height:50px; font-weight:900; font-size:1.02rem; background:linear-gradient(135deg, #ff5500 0%, #ea580c 50%, #f59e0b 100%); border:none; box-shadow:0 8px 24px rgba(255, 85, 0, 0.4); justify-content:center; border-radius:14px;">
+            <span>🎲 Abrir y Girar Ruleta Gratis</span>
+          </button>
+          <button type="button" id="btn-claim-lootbox" onclick="claimLootboxPrize()" class="btn btn-primary" style="display:none; width:100%; min-height:50px; font-weight:900; font-size:1rem; background:#10b981; border:none; box-shadow:0 8px 24px rgba(16, 185, 129, 0.35); justify-content:center; border-radius:14px;">
+            <span>🎉 Añadir Cupón a mi Cuenta y Canjear</span>
+          </button>
         </div>
       </div>
     </div>
@@ -2473,6 +2968,8 @@
             const telefono = meta.telefono || meta.phone || (savedLocal && savedLocal.telefono) || '';
             const direccion = meta.direccion || (savedLocal && savedLocal.direccion) || '';
             const avatarUrl = meta.avatar_url || meta.picture || '';
+            const ruletaGirada = Boolean(meta.ruleta_bienvenida_girada !== undefined ? meta.ruleta_bienvenida_girada : (savedLocal && savedLocal.ruleta_bienvenida_girada));
+            const cupones = Array.isArray(meta.cupones) ? meta.cupones : ((savedLocal && Array.isArray(savedLocal.cupones)) ? savedLocal.cupones : []);
 
             const mergedProfile = {
               uid: session.user.id,
@@ -2481,6 +2978,8 @@
               telefono,
               direccion,
               avatar_url: avatarUrl,
+              ruleta_bienvenida_girada: ruletaGirada,
+              cupones: cupones,
               provider: (session.user.app_metadata && session.user.app_metadata.provider) || 'email'
             };
 
@@ -2493,6 +2992,7 @@
             }
             syncCustomerDataToCheckout(mergedProfile);
             renderCustomerAuthModalView(mergedProfile);
+            if (typeof updateCartUI === 'function') updateCartUI();
             return;
           }
         } catch (err) {
@@ -2514,7 +3014,8 @@
       } else {
         if (authLabel) authLabel.textContent = 'Iniciar sesión';
       }
-      renderCustomerAuthModalView(null);
+      renderCustomerAuthModalView(savedLocal);
+      if (typeof updateCartUI === 'function') updateCartUI();
     }
 
     function renderCustomerAuthModalView(profile) {
@@ -2550,6 +3051,9 @@
             avatarEl.textContent = initials || 'CL';
           }
         }
+
+        // Renderizar cupones y estado de ruleta
+        renderProfileCoupons(profile);
 
         // Calcular estadísticas de pedidos del cliente
         let localOrders = [];
@@ -2711,6 +3215,8 @@
             nombre,
             telefono,
             direccion,
+            ruleta_bienvenida_girada: false,
+            cupones: [],
             provider: 'email'
           };
           try {
@@ -2724,9 +3230,15 @@
             if (typeof showToast === 'function') {
               showToast('¡Cuenta creada y sesión iniciada como ' + nombre + '!');
             }
+            setTimeout(() => {
+              openWelcomeLootboxModal();
+            }, 400);
           } else {
             await loadSavedCustomerProfile();
-            showCustAuthAlert('¡Cuenta registrada con éxito! Revisa tu correo ' + email + ' para confirmarla.', 'success');
+            showCustAuthAlert('¡Cuenta registrada con éxito! Puedes probar tu ruleta de bienvenida ahora.', 'success');
+            setTimeout(() => {
+              openWelcomeLootboxModal();
+            }, 600);
           }
         }
       } catch (err) {
@@ -2817,6 +3329,468 @@
       closeCustomerAuthModal();
       if (typeof showToast === 'function') {
         showToast('Has cerrado sesión correctamente');
+      }
+    }
+
+    /* =========================================================================
+       SISTEMA DE RULETA CS:GO Y GESTIÓN DE CUPONES DEL CLIENTE
+       ========================================================================= */
+    const LOOTBOX_PRIZES = [
+      {
+        tag: 'SALSA',
+        nombre: 'Tarrina Salsa Secreta Fogonazo',
+        prod_id: 'prod_salsa1',
+        valor_cents: 150,
+        probabilidad: 75,
+        rareza: 'common',
+        rarezaLabel: 'Común',
+        rarezaColor: '#3b82f6',
+        imagen_url: 'https://images.unsplash.com/photo-1472476443507-c7a5948772fc?w=600&auto=format&fit=crop&q=80'
+      },
+      {
+        tag: 'BEBIDA',
+        nombre: 'Coca-Cola Original Bien Fría (33cl)',
+        prod_id: 'prod_beb3',
+        valor_cents: 250,
+        probabilidad: 18,
+        rareza: 'rare',
+        rarezaLabel: 'Raro',
+        rarezaColor: '#a855f7',
+        imagen_url: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=600&auto=format&fit=crop&q=80'
+      },
+      {
+        tag: 'POSTRE',
+        nombre: 'Tarta de Queso Fluida al Horno',
+        prod_id: 'prod_pos1',
+        valor_cents: 590,
+        probabilidad: 6,
+        rareza: 'epic',
+        rarezaLabel: 'Épico',
+        rarezaColor: '#ec4899',
+        imagen_url: 'https://images.unsplash.com/photo-1533134242443-d4fd215305ad?w=600&auto=format&fit=crop&q=80'
+      },
+      {
+        tag: 'BURGER',
+        nombre: 'Smash Pollo Sureño Crujiente',
+        prod_id: 'prod_b3',
+        valor_cents: 990,
+        probabilidad: 1,
+        rareza: 'legendary',
+        rarezaLabel: 'Legendario',
+        rarezaColor: '#f59e0b',
+        imagen_url: 'https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?w=600&auto=format&fit=crop&q=80'
+      }
+    ];
+
+    let csgoAudioCtx = null;
+    function playCsgoTickSound() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        if (!csgoAudioCtx) csgoAudioCtx = new AudioCtx();
+        if (csgoAudioCtx.state === 'suspended') csgoAudioCtx.resume();
+
+        const osc = csgoAudioCtx.createOscillator();
+        const gain = csgoAudioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(750, csgoAudioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(180, csgoAudioCtx.currentTime + 0.028);
+
+        gain.gain.setValueAtTime(0.09, csgoAudioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, csgoAudioCtx.currentTime + 0.028);
+
+        osc.connect(gain);
+        gain.connect(csgoAudioCtx.destination);
+
+        osc.start();
+        osc.stop(csgoAudioCtx.currentTime + 0.028);
+      } catch (_) {}
+    }
+
+    function playCsgoWinnerFanfare() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        if (!csgoAudioCtx) csgoAudioCtx = new AudioCtx();
+        if (csgoAudioCtx.state === 'suspended') csgoAudioCtx.resume();
+
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((freq, i) => {
+          const osc = csgoAudioCtx.createOscillator();
+          const gain = csgoAudioCtx.createGain();
+          osc.type = 'sine';
+          const startTime = csgoAudioCtx.currentTime + i * 0.11;
+          const duration = (i === notes.length - 1) ? 0.65 : 0.16;
+
+          osc.frequency.setValueAtTime(freq, startTime);
+          gain.gain.setValueAtTime(0.14, startTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+
+          osc.connect(gain);
+          gain.connect(csgoAudioCtx.destination);
+
+          osc.start(startTime);
+          osc.stop(startTime + duration);
+        });
+      } catch (_) {}
+    }
+
+    function getCustomerCoupons() {
+      let profile = null;
+      try {
+        profile = JSON.parse(localStorage.getItem('fogon_customer_profile') || 'null');
+      } catch (_) {}
+
+      let cupones = [];
+      if (profile && Array.isArray(profile.cupones)) {
+        cupones = profile.cupones;
+      } else if (profile && profile.email) {
+        try {
+          cupones = JSON.parse(localStorage.getItem('fogon_coupons_' + profile.email) || '[]');
+        } catch (_) {}
+      } else {
+        try {
+          cupones = JSON.parse(localStorage.getItem('fogon_guest_coupons') || '[]');
+        } catch (_) {}
+      }
+      return Array.isArray(cupones) ? cupones : [];
+    }
+
+    async function saveCustomerCoupons(cupones, ruletaGirada = true) {
+      let profile = null;
+      try {
+        profile = JSON.parse(localStorage.getItem('fogon_customer_profile') || 'null') || {};
+      } catch (_) { profile = {}; }
+
+      profile.cupones = cupones;
+      profile.ruleta_bienvenida_girada = ruletaGirada;
+
+      try {
+        localStorage.setItem('fogon_customer_profile', JSON.stringify(profile));
+      } catch (_) {}
+
+      if (profile.email) {
+        try {
+          localStorage.setItem('fogon_coupons_' + profile.email, JSON.stringify(cupones));
+        } catch (_) {}
+      } else {
+        try {
+          localStorage.setItem('fogon_guest_coupons', JSON.stringify(cupones));
+        } catch (_) {}
+      }
+
+      if (window.supabaseClient && currentAuthSessionUser) {
+        try {
+          await window.supabaseClient.auth.updateUser({
+            data: {
+              cupones: cupones,
+              ruleta_bienvenida_girada: ruletaGirada
+            }
+          });
+        } catch (e) {
+          console.warn('Error sincronizando cupones con Supabase Auth:', e);
+        }
+      }
+
+      if (typeof updateCartUI === 'function') {
+        updateCartUI();
+      }
+      renderCustomerAuthModalView(profile);
+    }
+
+    let isSpinningLootbox = false;
+    let currentLootboxWinnerPrize = null;
+    let lootboxAnimationId = null;
+
+    function openWelcomeLootboxModal() {
+      document.body.classList.add('modal-open');
+      const modal = document.getElementById('lootbox-modal');
+      if (modal) modal.classList.add('open');
+
+      const banner = document.getElementById('lootbox-winner-banner');
+      const btnSpin = document.getElementById('btn-spin-lootbox');
+      const btnClaim = document.getElementById('btn-claim-lootbox');
+      if (banner) banner.style.display = 'none';
+      if (btnSpin) {
+        btnSpin.style.display = 'block';
+        btnSpin.disabled = false;
+        btnSpin.innerHTML = '<span>🎲 Abrir y Girar Ruleta Gratis</span>';
+      }
+      if (btnClaim) btnClaim.style.display = 'none';
+
+      setupLootboxRollerTrack();
+    }
+
+    function closeWelcomeLootboxModal() {
+      if (isSpinningLootbox) return;
+      document.body.classList.remove('modal-open');
+      const modal = document.getElementById('lootbox-modal');
+      if (modal) modal.classList.remove('open');
+    }
+
+    function setupLootboxRollerTrack(highlightWinningIndex = null) {
+      const track = document.getElementById('csgo-roller-track');
+      if (!track) return;
+
+      track.style.transition = 'none';
+      track.style.transform = 'translateX(0px)';
+
+      const cardsHtml = [];
+      for (let i = 0; i < 60; i++) {
+        const pIndex = (i === highlightWinningIndex && currentLootboxWinnerPrize)
+          ? LOOTBOX_PRIZES.findIndex(p => p.tag === currentLootboxWinnerPrize.tag)
+          : (i % 4 === 3 ? 3 : (i % 3 === 2 ? 2 : (i % 2 === 1 ? 1 : 0)));
+        const item = (i === highlightWinningIndex && currentLootboxWinnerPrize)
+          ? currentLootboxWinnerPrize
+          : LOOTBOX_PRIZES[pIndex];
+
+        cardsHtml.push(`
+          <div class="csgo-item-card rarity-${item.rareza}" id="csgo-card-${i}">
+            <span class="csgo-item-rarity-tag" style="color:${item.rarezaColor};">${item.rarezaLabel}</span>
+            <img src="${item.imagen_url}" alt="${item.nombre}" class="csgo-item-img">
+            <span class="csgo-item-name">${item.nombre}</span>
+          </div>
+        `);
+      }
+      track.innerHTML = cardsHtml.join('');
+    }
+
+    function spinWelcomeLootbox() {
+      if (isSpinningLootbox) return;
+      isSpinningLootbox = true;
+
+      const btnSpin = document.getElementById('btn-spin-lootbox');
+      if (btnSpin) {
+        btnSpin.disabled = true;
+        btnSpin.innerHTML = '<span>Abriendo caja CS:GO...</span>';
+      }
+
+      // Probabilidades rentables para el negocio: 75% salsa, 18% bebida, 6% postre, 1% smash
+      const rand = Math.random() * 100;
+      let winner = LOOTBOX_PRIZES[0];
+      if (rand >= 99) {
+        winner = LOOTBOX_PRIZES[3];
+      } else if (rand >= 93) {
+        winner = LOOTBOX_PRIZES[2];
+      } else if (rand >= 75) {
+        winner = LOOTBOX_PRIZES[1];
+      }
+      currentLootboxWinnerPrize = winner;
+
+      const winningIndex = 46;
+      setupLootboxRollerTrack(winningIndex);
+
+      const viewport = document.getElementById('csgo-roller-viewport');
+      const track = document.getElementById('csgo-roller-track');
+      const viewportWidth = viewport ? viewport.clientWidth : 480;
+
+      const randomJitter = (Math.random() - 0.5) * 56;
+      const cardCenter = 12 + (winningIndex * 130) + (122 / 2);
+      const targetTranslateX = - (cardCenter - (viewportWidth / 2) + randomJitter);
+
+      const durationMs = 5200;
+      const startTime = performance.now();
+      let lastCardPassed = 0;
+
+      const tickLoop = (now) => {
+        const elapsed = now - startTime;
+        const progress = Math.min(1, elapsed / durationMs);
+
+        const currentApproxPos = Math.abs(targetTranslateX) * Math.sin(progress * Math.PI / 2);
+        const cardIndex = Math.floor(currentApproxPos / 130);
+        if (cardIndex > lastCardPassed) {
+          lastCardPassed = cardIndex;
+          playCsgoTickSound();
+        }
+
+        if (progress < 1) {
+          lootboxAnimationId = requestAnimationFrame(tickLoop);
+        }
+      };
+
+      setTimeout(() => {
+        track.style.transition = `transform ${durationMs}ms cubic-bezier(0.12, 0.8, 0.18, 1)`;
+        track.style.transform = `translateX(${targetTranslateX}px)`;
+        lootboxAnimationId = requestAnimationFrame(tickLoop);
+      }, 50);
+
+      setTimeout(() => {
+        if (lootboxAnimationId) cancelAnimationFrame(lootboxAnimationId);
+        isSpinningLootbox = false;
+        playCsgoWinnerFanfare();
+
+        const winCard = document.getElementById(`csgo-card-${winningIndex}`);
+        if (winCard) {
+          winCard.style.boxShadow = `0 0 25px ${winner.rarezaColor}`;
+          winCard.style.transform = 'scale(1.06)';
+        }
+
+        const banner = document.getElementById('lootbox-winner-banner');
+        const wTitle = document.getElementById('winner-title');
+        const wDesc = document.getElementById('winner-desc');
+        const wImg = document.getElementById('winner-img');
+        const wCode = document.getElementById('winner-code');
+        const wRarity = document.getElementById('winner-rarity-label');
+        const btnClaim = document.getElementById('btn-claim-lootbox');
+
+        const tempCode = 'FOGON-' + winner.tag + '-' + Math.floor(1000 + Math.random() * 9000);
+        currentLootboxWinnerPrize.generatedCode = tempCode;
+
+        if (wTitle) wTitle.textContent = winner.nombre;
+        if (wDesc) wDesc.textContent = `Premio valorado en ${(winner.valor_cents / 100).toFixed(2).replace('.', ',')} € • ¡100% GRATIS!`;
+        if (wImg) wImg.src = winner.imagen_url;
+        if (wCode) wCode.textContent = `CÓDIGO: ${tempCode}`;
+        if (wRarity) {
+          wRarity.textContent = `¡Desbloqueado! • Rareza ${winner.rarezaLabel}`;
+          wRarity.style.color = winner.rarezaColor;
+        }
+
+        if (banner) banner.style.display = 'flex';
+        if (btnSpin) btnSpin.style.display = 'none';
+        if (btnClaim) btnClaim.style.display = 'flex';
+      }, durationMs + 100);
+    }
+
+    async function claimLootboxPrize() {
+      if (!currentLootboxWinnerPrize) return;
+
+      const p = currentLootboxWinnerPrize;
+      const newCoupon = {
+        id: 'cup_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+        codigo: p.generatedCode || ('FOGON-' + p.tag + '-' + Math.floor(1000 + Math.random() * 9000)),
+        nombre: p.nombre,
+        prod_id: p.prod_id,
+        valor_cents: p.valor_cents,
+        rareza: p.rareza,
+        imagen_url: p.imagen_url,
+        usado: false,
+        fecha_creacion: new Date().toISOString()
+      };
+
+      const existingCoupons = getCustomerCoupons();
+      existingCoupons.unshift(newCoupon);
+
+      await saveCustomerCoupons(existingCoupons, true);
+
+      // Si el producto del premio no está en el carrito, añadirlo automáticamente
+      if (typeof cart !== 'undefined' && Array.isArray(cart) && typeof MENU_DATA !== 'undefined') {
+        const hasProd = cart.some(item => item.id === p.prod_id);
+        if (!hasProd) {
+          let targetProd = null;
+          for (const cat of MENU_DATA) {
+            const found = (cat.productos || []).find(pr => pr.id === p.prod_id);
+            if (found) { targetProd = found; break; }
+          }
+          if (targetProd) {
+            cart.push({
+              id: targetProd.id,
+              nombre: targetProd.nombre,
+              precioBaseCents: targetProd.precio_cents,
+              cantidad: 1,
+              selectedOptions: [],
+              uniqueKey: targetProd.id + '__coupon_free'
+            });
+          }
+        }
+      }
+
+      window.selectedCouponId = newCoupon.id;
+      if (typeof updateCartUI === 'function') updateCartUI();
+
+      closeWelcomeLootboxModal();
+      if (typeof showToast === 'function') {
+        showToast(`🎉 ¡Cupón ${newCoupon.codigo} añadido y aplicado a tu pedido!`);
+      }
+    }
+
+    function renderProfileCoupons(profile) {
+      const container = document.getElementById('profile-coupons-container');
+      const countBadge = document.getElementById('profile-coupons-count-badge');
+      const lootboxBanner = document.getElementById('profile-lootbox-pending-banner');
+      if (!container) return;
+
+      const cupones = getCustomerCoupons();
+      const availableCoupons = cupones.filter(c => !c.usado);
+
+      if (countBadge) {
+        countBadge.textContent = `${availableCoupons.length} disponible${availableCoupons.length === 1 ? '' : 's'}`;
+        countBadge.style.background = availableCoupons.length > 0 ? '#dcfce7' : '#f1f5f9';
+        countBadge.style.color = availableCoupons.length > 0 ? '#166534' : '#64748b';
+      }
+
+      const ruletaGirada = Boolean(profile && profile.ruleta_bienvenida_girada);
+      if (lootboxBanner) {
+        lootboxBanner.style.display = ruletaGirada ? 'none' : 'flex';
+      }
+
+      if (cupones.length === 0) {
+        container.innerHTML = `
+          <div style="font-size:0.82rem; color:var(--text-muted); background:#f8fafc; border:1px dashed #cbd5e1; border-radius:10px; padding:14px; text-align:center;">
+            Aún no tienes cupones. ${!ruletaGirada ? '¡Gira arriba tu Ruleta de Bienvenida para ganar uno!' : ''}
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = cupones.map(c => {
+        const isApplied = (window.selectedCouponId === c.id);
+        const valorFmt = ((c.valor_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €';
+
+        return `
+          <div class="coupon-ticket-card ${c.usado ? 'used' : ''}">
+            <img src="${c.imagen_url}" alt="" class="coupon-ticket-img">
+            <div class="coupon-ticket-info">
+              <div class="coupon-ticket-title">${escapeHtml(c.nombre)}</div>
+              <div class="coupon-ticket-meta">
+                <span class="coupon-code-badge">${escapeHtml(c.codigo)}</span>
+                <span>• Valor: <strong>${valorFmt}</strong></span>
+                ${c.usado ? '<span style="color:#dc2626; font-weight:800;">(Canjeado)</span>' : '<span style="color:#059669; font-weight:800;">✓ Disponible</span>'}
+              </div>
+            </div>
+            ${!c.usado ? `
+              <button type="button" onclick="applyCouponFromProfile('${c.id}')" class="btn ${isApplied ? 'btn-secondary' : 'btn-primary'}" style="padding:6px 11px; font-size:0.75rem; font-weight:800; border-radius:8px; white-space:nowrap;">
+                ${isApplied ? '✓ Aplicado' : 'Usar'}
+              </button>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function applyCouponFromProfile(couponId) {
+      const cupones = getCustomerCoupons();
+      const coupon = cupones.find(c => c.id === couponId && !c.usado);
+      if (!coupon) return;
+
+      window.selectedCouponId = coupon.id;
+
+      if (coupon.prod_id && typeof cart !== 'undefined' && Array.isArray(cart) && typeof MENU_DATA !== 'undefined') {
+        const exists = cart.some(item => item.id === coupon.prod_id);
+        if (!exists) {
+          let foundProd = null;
+          for (const cat of MENU_DATA) {
+            const p = (cat.productos || []).find(pr => pr.id === coupon.prod_id);
+            if (p) { foundProd = p; break; }
+          }
+          if (foundProd) {
+            cart.push({
+              id: foundProd.id,
+              nombre: foundProd.nombre,
+              precioBaseCents: foundProd.precio_cents,
+              cantidad: 1,
+              selectedOptions: [],
+              uniqueKey: foundProd.id + '__coupon_free'
+            });
+          }
+        }
+      }
+
+      if (typeof updateCartUI === 'function') updateCartUI();
+
+      closeCustomerAuthModal();
+      openCheckoutModal();
+      if (typeof showToast === 'function') {
+        showToast(`✓ Cupón ${coupon.codigo} aplicado al pedido`);
       }
     }
 
